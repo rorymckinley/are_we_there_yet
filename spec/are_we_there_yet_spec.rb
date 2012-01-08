@@ -3,7 +3,8 @@ require 'spec_helper'
 
 describe AreWeThereYet do
   before(:each) do
-    @db_name = "#{Time.now.to_f}.sqlite"
+    @db_name = "/tmp/arewethereyet.sqlite"
+    File.unlink(@db_name) if File.exists? @db_name
   end
 
   it "extends the RSpec formatter" do
@@ -19,9 +20,29 @@ describe AreWeThereYet do
     it "creates the necessary tables in the database" do
       AreWeThereYet.new({},@db_name)
       table_exists?(@db_name, 'locations').should be_true
+      table_exists?(@db_name, 'examples').should be_true
       table_exists?(@db_name, 'metrics').should be_true
     end
 
-    it "does not create the tables if they already exist"
+    it "does not create the tables if they already exist" do
+      AreWeThereYet.new({},@db_name)
+      SQLite3::Database.any_instance.should_not_receive(:execute)
+
+      AreWeThereYet.new({}, @db_name)
+    end
+  end
+
+  describe "logging a metric for a new location" do
+    before(:each) do
+      @awty = AreWeThereYet.new({}, @db_name)
+      @mock_example = mock(Example, :location => "/path/to/spec")
+    end
+
+    it "creates an entry for the example's location" do
+      @awty.example_passed(@mock_example)
+
+      locations = SQLite3::Database.new(@db_name).execute("SELECT * FROM locations")
+      locations.size.should == 1
+    end
   end
 end
