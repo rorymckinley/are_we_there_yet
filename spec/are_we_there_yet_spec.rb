@@ -212,4 +212,33 @@ describe AreWeThereYet do
       connection.execute("SELECT * FROM examples").should be_empty
     end
   end
+
+  describe "closing" do
+    before(:each) do
+      @awty = AreWeThereYet.new({}, @db_name)
+      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
+      @awty.example_started(@mock_example)
+    end
+
+    it "closes the connection to the database" do
+      SQLite3::Database.any_instance.should_receive(:close)
+      @awty.close
+    end
+
+    it "updates the end time value for the relevant run" do
+      @awty.close
+
+      connection = SQLite3::Database.new(@db_name)
+      run = connection.get_first_row('SELECT ended_at FROM runs')
+      run.first.should_not be_nil
+    end
+
+    it "does not update the run if runs are not being tracked" do
+      connection = SQLite3::Database.new(@db_name)
+      connection.execute("DROP TABLE runs")
+      AreWeThereYet.any_instance.should_receive(:tracking_runs?).and_return(false)
+
+      expect { @awty.close }.should_not raise_error
+    end
+  end
 end

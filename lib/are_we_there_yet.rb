@@ -24,6 +24,15 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
     end
   end
 
+  def close
+    @db.execute(
+      "UPDATE runs SET ended_at = :end_time WHERE id = :run_id",
+      :end_time => Time.now.strftime("%Y-%m-%d %H:%M:%S"), 
+      :run_id => @run_id
+    ) if tracking_runs?
+    @db.close
+  end
+
   private
 
   def log_run
@@ -83,7 +92,7 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
 
     if existing_tables.empty?
       @db.transaction do |db|
-        db.execute("CREATE TABLE runs(id INTEGER PRIMARY KEY, started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        db.execute("CREATE TABLE runs(id INTEGER PRIMARY KEY, started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ended_at TIMESTAMP)")
         db.execute("CREATE TABLE files(id INTEGER PRIMARY KEY, path VARCHAR(255))")
         db.execute("CREATE INDEX path ON files (path)")
         db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, file_id INTEGER, description TEXT)")
