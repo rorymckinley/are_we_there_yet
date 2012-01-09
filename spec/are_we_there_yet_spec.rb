@@ -83,4 +83,69 @@ describe AreWeThereYet do
       metrics.first[3].should == end_time.utc.strftime("%Y-%m-%d %H:%M:%S")
     end
   end
+
+  describe "logging a metric for an existing location" do
+    before(:each) do
+      @awty = AreWeThereYet.new({}, @db_name)
+      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
+      @another_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "yippee!")
+    end
+
+    it "creates an example linked to the existing location" do
+      @awty.example_start(@mock_example)
+      @awty.example_passed(@mock_example)
+
+      @awty.example_start(@another_example)
+      @awty.example_passed(@another_example)
+
+      connection = SQLite3::Database.new(@db_name)
+
+      examples = connection.execute("SELECT description FROM examples")
+      examples.size.should == 2
+
+      locations = connection.execute("SELECT id FROM locations")
+      locations.size.should == 1
+    end
+  end
+
+  describe "logging a metric for an existing example" do
+    before(:each) do
+      @awty = AreWeThereYet.new({}, @db_name)
+      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
+    end
+
+    it "creates an example linked to the existing location" do
+      @awty.example_start(@mock_example)
+      @awty.example_passed(@mock_example)
+
+      @awty.example_start(@mock_example)
+      @awty.example_passed(@mock_example)
+
+      connection = SQLite3::Database.new(@db_name)
+
+      metrics = connection.execute("SELECT id FROM metrics")
+      metrics.size.should == 2
+
+      examples = connection.execute("SELECT description FROM examples")
+      examples.size.should == 1
+    end
+  end
+
+  describe "handling errors when logging" do
+    before(:each) do
+      @awty = AreWeThereYet.new({}, @db_name)
+      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
+      @awty.example_start(@mock_example)
+    end
+
+    it "allows the error through and any changes are undone" do
+      connection = SQLite3::Database.new(@db_name)
+      connection.execute("DROP TABLE metrics")
+
+      expect { @awty.example_passed(@mock_example) }.should raise_error
+
+      connection.execute("SELECT * FROM locations").should be_empty
+      connection.execute("SELECT * FROM examples").should be_empty
+    end
+  end
 end
