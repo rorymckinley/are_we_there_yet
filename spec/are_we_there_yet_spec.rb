@@ -102,7 +102,7 @@ describe AreWeThereYet do
       metrics.size.should == 1
       metrics.first[1].should == example_id
       metrics.first[2].should == end_time - start_time
-      metrics.first[3].should == end_time.utc.strftime("%Y-%m-%d %H:%M:%S")
+      metrics.first[3].should_not be_nil
     end
   end
 
