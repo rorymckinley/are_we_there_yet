@@ -30,6 +30,24 @@ describe AreWeThereYet do
 
       AreWeThereYet.new({}, @db_name)
     end
+
+    it "rolls back table creation on error" do
+      connection = SQLite3::Database.new(@db_name)
+      connection.stub(:execute) do |arg|
+        if arg =~ /metrics/
+          raise RuntimeError
+        else
+          connection.execute2(arg)
+          []
+        end
+      end
+      connection.should_receive(:execute).with("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)").and_raise("OOOOPS")
+      SQLite3::Database.should_receive(:new).and_return(connection)
+
+      expect { AreWeThereYet.new({},@db_name) }.should raise_error
+
+      connection.execute2("SELECT name FROM sqlite_master").size.should == 1 # Execute2 lists fields - size 1 means empty response
+    end
   end
 
   describe "logging a metric for a new location" do
