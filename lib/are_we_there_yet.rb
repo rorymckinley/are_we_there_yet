@@ -18,7 +18,11 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
 
       example_id = persist_example(db, example, location_id)
 
-      db.execute("INSERT INTO metrics(example_id, execution_time) VALUES(:example_id, :execution_time)", :example_id => db.last_insert_row_id, :execution_time => Time.now - @start)
+      db.execute(
+        "INSERT INTO metrics(example_id, execution_time) VALUES(:example_id, :execution_time)",
+        :example_id => db.last_insert_row_id,
+        :execution_time => Time.now - @start
+      )
     end
   end
 
@@ -37,9 +41,17 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   end
 
   def persist_example(db, example, location_id)
-    examples = db.execute("SELECT id FROM examples WHERE location_id = :location_id AND description = :description", :location_id => location_id, :description => example.description)
+    examples = db.execute(
+      "SELECT id FROM examples WHERE location_id = :location_id AND description = :description",
+      :location_id => location_id,
+      :description => example.description
+    )
     if examples.empty?
-      db.execute("INSERT INTO examples(location_id, description) VALUES(:location_id, :description)", :location_id => location_id, :description => example.description)
+      db.execute(
+        "INSERT INTO examples(location_id, description) VALUES(:location_id, :description)",
+        :location_id => location_id,
+        :description => example.description
+      )
       db.last_insert_row_id
     else
       examples.first[0]

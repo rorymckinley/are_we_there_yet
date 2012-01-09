@@ -46,7 +46,6 @@ describe AreWeThereYet do
           []
         end
       end
-      connection.should_receive(:execute).with("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)").and_raise("OOOOPS")
       SQLite3::Database.should_receive(:new).and_return(connection)
 
       expect { AreWeThereYet.new({},@db_name) }.should raise_error

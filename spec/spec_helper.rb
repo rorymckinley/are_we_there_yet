@@ -25,11 +25,15 @@ RSpec.configure do |config|
 end
 
 def table_exists?(database_location,table_name)
-  SQLite3::Database.new(database_location).execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '#{table_name}'").any?
+  SQLite3::Database.new(database_location).execute(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '#{table_name}'"
+  ).any?
 end
 
 def index_exists?(database_location,table_name,index_name)
-  SQLite3::Database.new(database_location).execute("SELECT name FROM sqlite_master WHERE type = 'index' AND name = '#{index_name}' AND tbl_name = '#{table_name}'").any?
+  SQLite3::Database.new(database_location).execute(
+    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = '#{index_name}' AND tbl_name = '#{table_name}'"
+  ).any?
 end
 
 module Spec
