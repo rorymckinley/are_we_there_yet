@@ -27,5 +27,9 @@ def table_exists?(database_location,table_name)
   SQLite3::Database.new(database_location).execute("SELECT name FROM sqlite_master WHERE name = '#{table_name}'").any?
 end
 
-class Example
+module Spec
+  module Example
+    class ExampleProxy
+    end
+  end
 end
