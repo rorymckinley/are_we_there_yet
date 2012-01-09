@@ -6,6 +6,8 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
     @db = SQLite3::Database.new(where)
 
     create_tables
+
+    log_run
   end
 
   def example_started(example)
@@ -18,15 +20,16 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
 
       example_id = persist_example(db, example, location_id)
 
-      db.execute(
-        "INSERT INTO metrics(example_id, execution_time) VALUES(:example_id, :execution_time)",
-        :example_id => db.last_insert_row_id,
-        :execution_time => Time.now - @start
-      )
+      persist_metric(db, example_id)
     end
   end
 
   private
+
+  def log_run
+    @db.execute("INSERT INTO runs(id) VALUES(NULL)") if tracking_runs?
+    @run_id = @db.last_insert_row_id
+  end
 
   def persist_file(db, example)
     path = example.location.split(':').first
@@ -58,17 +61,39 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
     end
   end
 
+  def persist_metric(db, example_id)
+    if tracking_runs?
+      db.execute(
+        "INSERT INTO metrics(example_id, execution_time, run_id) VALUES(:example_id, :execution_time, :run_id)",
+        :example_id => db.last_insert_row_id,
+        :execution_time => Time.now - @start,
+        :run_id => @run_id
+      )
+    else
+      db.execute(
+        "INSERT INTO metrics(example_id, execution_time) VALUES(:example_id, :execution_time)",
+        :example_id => db.last_insert_row_id,
+        :execution_time => Time.now - @start
+      )
+    end
+  end
+  
   def create_tables
     existing_tables = @db.execute("SELECT name FROM sqlite_master")
 
     if existing_tables.empty?
       @db.transaction do |db|
+        db.execute("CREATE TABLE runs(id INTEGER PRIMARY KEY, started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
         db.execute("CREATE TABLE files(id INTEGER PRIMARY KEY, path VARCHAR(255))")
         db.execute("CREATE INDEX path ON files (path)")
         db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, file_id INTEGER, description TEXT)")
         db.execute("CREATE INDEX file_description ON examples (file_id, description)")
-        db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, run_id INTEGER )")
       end
     end
+  end
+
+  def tracking_runs?
+    @tracking_runs ||= @db.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'runs'").any?
   end
 end
