@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "are_we_there_yet"
   gem.homepage = "http://github.com/rorymckinley/are_we_there_yet"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Profiler for RSpec 1.3.x}
+  gem.description = %Q{Provides detailed profiling data for RSpec runs in a SQLite3 DB}
   gem.email = "rorymckinley@gmail.com"
   gem.authors = ["Rory McKinley"]
   # dependencies defined in Gemfile
