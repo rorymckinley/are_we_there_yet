@@ -18,15 +18,15 @@ describe AreWeThereYet do
 
     it "creates the necessary tables in the database" do
       AreWeThereYet.new({},@db_name)
-      table_exists?(@db_name, 'locations').should be_true
+      table_exists?(@db_name, 'files').should be_true
       table_exists?(@db_name, 'examples').should be_true
       table_exists?(@db_name, 'metrics').should be_true
     end
 
     it "creates the necessary indexes" do
       AreWeThereYet.new({},@db_name)
-      index_exists?(@db_name, 'locations', 'path').should be_true
-      index_exists?(@db_name, 'examples', 'location_description').should be_true
+      index_exists?(@db_name, 'files', 'path').should be_true
+      index_exists?(@db_name, 'examples', 'file_description').should be_true
     end
 
     it "does not create the tables if they already exist" do
@@ -54,19 +54,19 @@ describe AreWeThereYet do
     end
   end
 
-  describe "logging a metric for a new location" do
+  describe "logging a metric for a new file" do
     before(:each) do
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec:42", :description => "blaah")
     end
 
-    it "creates an entry for the example's location" do
+    it "creates an entry for the example's file" do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      locations = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM locations")
-      locations.size.should == 1
-      locations.first[1].should == @mock_example.location.split(':').first
+      files = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM files")
+      files.size.should == 1
+      files.first[1].should == @mock_example.location.split(':').first
     end
 
     it "creates an entry for the example itself" do
@@ -74,12 +74,12 @@ describe AreWeThereYet do
       @awty.example_passed(@mock_example)
 
       connection = SQLite3::Database.new(@db_name)
-      location = connection.get_first_row("SELECT id FROM locations")
-      location_id = location.first
-      examples = connection.execute("SELECT id, location_id, description FROM examples")
+      file = connection.get_first_row("SELECT id FROM files")
+      file_id = file.first
+      examples = connection.execute("SELECT id, file_id, description FROM examples")
 
       examples.size.should == 1
-      examples.first[1].should == location_id
+      examples.first[1].should == file_id
       examples.first[2].should == @mock_example.description
     end
 
@@ -106,7 +106,7 @@ describe AreWeThereYet do
     end
   end
 
-  describe "logging a metric for an existing location" do
+  describe "logging a metric for an existing file" do
     before(:each) do
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
@@ -125,8 +125,8 @@ describe AreWeThereYet do
       examples = connection.execute("SELECT description FROM examples")
       examples.size.should == 2
 
-      locations = connection.execute("SELECT id FROM locations")
-      locations.size.should == 1
+      files = connection.execute("SELECT id FROM files")
+      files.size.should == 1
     end
   end
 
@@ -136,7 +136,7 @@ describe AreWeThereYet do
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
     end
 
-    it "creates an example linked to the existing location" do
+    it "creates a metric linked to the example" do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
@@ -166,7 +166,7 @@ describe AreWeThereYet do
 
       expect { @awty.example_passed(@mock_example) }.should raise_error
 
-      connection.execute("SELECT * FROM locations").should be_empty
+      connection.execute("SELECT * FROM files").should be_empty
       connection.execute("SELECT * FROM examples").should be_empty
     end
   end
