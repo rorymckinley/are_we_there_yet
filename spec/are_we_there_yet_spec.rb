@@ -1,4 +1,3 @@
-# require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'spec_helper'
 
 describe AreWeThereYet do
@@ -22,6 +21,12 @@ describe AreWeThereYet do
       table_exists?(@db_name, 'locations').should be_true
       table_exists?(@db_name, 'examples').should be_true
       table_exists?(@db_name, 'metrics').should be_true
+    end
+
+    it "creates the necessary indexes" do
+      AreWeThereYet.new({},@db_name)
+      index_exists?(@db_name, 'locations', 'path').should be_true
+      index_exists?(@db_name, 'examples', 'location_description').should be_true
     end
 
     it "does not create the tables if they already exist" do
@@ -53,20 +58,20 @@ describe AreWeThereYet do
   describe "logging a metric for a new location" do
     before(:each) do
       @awty = AreWeThereYet.new({}, @db_name)
-      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
+      @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec:42", :description => "blaah")
     end
 
     it "creates an entry for the example's location" do
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
       locations = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM locations")
       locations.size.should == 1
-      locations.first[1].should == @mock_example.location
+      locations.first[1].should == @mock_example.location.split(':').first
     end
 
     it "creates an entry for the example itself" do
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
       connection = SQLite3::Database.new(@db_name)
@@ -84,7 +89,7 @@ describe AreWeThereYet do
       end_time = Time.now
 
       Time.should_receive(:now).and_return(start_time)
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
 
       Time.should_receive(:now).and_return(end_time)
       @awty.example_passed(@mock_example)
@@ -110,10 +115,10 @@ describe AreWeThereYet do
     end
 
     it "creates an example linked to the existing location" do
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      @awty.example_start(@another_example)
+      @awty.example_started(@another_example)
       @awty.example_passed(@another_example)
 
       connection = SQLite3::Database.new(@db_name)
@@ -133,10 +138,10 @@ describe AreWeThereYet do
     end
 
     it "creates an example linked to the existing location" do
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
       connection = SQLite3::Database.new(@db_name)
@@ -153,7 +158,7 @@ describe AreWeThereYet do
     before(:each) do
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
-      @awty.example_start(@mock_example)
+      @awty.example_started(@mock_example)
     end
 
     it "allows the error through and any changes are undone" do

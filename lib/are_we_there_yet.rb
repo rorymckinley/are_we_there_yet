@@ -1,3 +1,4 @@
+require "spec/runner/formatter/base_formatter" unless defined? AWTY_SPEC_RUN
 require 'sqlite3'
 
 class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
@@ -9,13 +10,15 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
     if existing_tables.empty?
       @db.transaction do |db|
         db.execute("CREATE TABLE locations(id INTEGER PRIMARY KEY, path VARCHAR(255))")
+        db.execute("CREATE INDEX path ON locations (path)")
         db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, location_id INTEGER, description TEXT)")
+        db.execute("CREATE INDEX location_description ON examples (location_id, description)")
         db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
       end
     end
   end
 
-  def example_start(example)
+  def example_started(example)
     @start = Time.now
   end
 
@@ -32,9 +35,11 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   private
 
   def persist_location(db, example)
-    locations = db.execute("SELECT id FROM locations WHERE path = :path", :path => example.location)
+    path = example.location.split(':').first
+
+    locations = db.execute("SELECT id FROM locations WHERE path = :path", :path => path)
     if locations.empty?
-      db.execute("INSERT INTO locations(path) VALUES(:path)", :path => example.location)
+      db.execute("INSERT INTO locations(path) VALUES(:path)", :path => path)
       db.last_insert_row_id
     else
       locations.first[0]
