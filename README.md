@@ -17,6 +17,19 @@ Usage is fairly simple:
 2. When running the specs pass the name of the class together with the location of your SQLite3 database, e.g:
   `spec -fAreWeThereYet:/path/to/db.sqlite3 spec`
 
+Only passing tests are profiled.
+
+## Data Structure
+
+The following data is stored in the database:
+
+- runs (from v0.2.0 onwards) - this is to allow conclusive tracking of metrics against a specific run. Multiple runs close to one 
+may result in guesswork when determining which metrics belong to which run. v0.1.0 does not track this data, but v0.2.0 is backwards 
+compatible and can handle the reduced fidelity when dealing with a database created by v0.1.0.
+- files - this represents the individual files containing the examples that are being run.
+- examples - the individual examples themselves (one file has many examples)
+- metrics - the run time per example (per run from v0.2.0 onwards) - one example has many metrics, one run has many metrics
+
 ## License
 
 Copyright (c) 2012 Rory McKinley
