@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
+    "are_we_there_yet.gemspec",
     "lib/are_we_there_yet.rb",
     "spec/are_we_there_yet_spec.rb",
     "spec/spec_helper.rb"
