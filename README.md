@@ -6,7 +6,8 @@ AreWeThereYet is a gem that provides alternative profiling for RSpec 1.3.x for t
 crunchy goodness that is RSpec 2.x.  Metrics are tracked per file and per example in a SQLite3 database. The location of the 
 database is passed through as a parameter when running the specs
 
-AWTY only logs data, so you are currently required to handroll any reporting functionality.
+AWTY only logs data, so you are currently required to handroll any reporting functionality. There is also, currently no data output
+to STDOUT when spec runs with this formatter.
 
 ## Usage
 
@@ -14,7 +15,7 @@ Usage is fairly simple:
 
 1. Add `require 'are_we_there_yet'` to your `spec_helper.rb` file.
 2. When running the specs pass the name of the class together with the location of your SQLite3 database, e.g:
-  `spec -c -fAreWeThereYet:/path/to/db.sqlite3 spec`
+  `spec -fAreWeThereYet:/path/to/db.sqlite3 spec`
 
 ## License
 
