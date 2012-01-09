@@ -5,17 +5,7 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   def initialize(options,where)
     @db = SQLite3::Database.new(where)
 
-    existing_tables = @db.execute("SELECT name FROM sqlite_master")
-
-    if existing_tables.empty?
-      @db.transaction do |db|
-        db.execute("CREATE TABLE locations(id INTEGER PRIMARY KEY, path VARCHAR(255))")
-        db.execute("CREATE INDEX path ON locations (path)")
-        db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, location_id INTEGER, description TEXT)")
-        db.execute("CREATE INDEX location_description ON examples (location_id, description)")
-        db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-      end
-    end
+    create_tables
   end
 
   def example_started(example)
@@ -53,6 +43,20 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
       db.last_insert_row_id
     else
       examples.first[0]
+    end
+  end
+
+  def create_tables
+    existing_tables = @db.execute("SELECT name FROM sqlite_master")
+
+    if existing_tables.empty?
+      @db.transaction do |db|
+        db.execute("CREATE TABLE locations(id INTEGER PRIMARY KEY, path VARCHAR(255))")
+        db.execute("CREATE INDEX path ON locations (path)")
+        db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, location_id INTEGER, description TEXT)")
+        db.execute("CREATE INDEX location_description ON examples (location_id, description)")
+        db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+      end
     end
   end
 end
