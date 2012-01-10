@@ -27,7 +27,7 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   def close
     @db.execute(
       "UPDATE runs SET ended_at = :end_time WHERE id = :run_id",
-      :end_time => Time.now.strftime("%Y-%m-%d %H:%M:%S"), 
+      :end_time => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"), 
       :run_id => @run_id
     ) if tracking_runs?
     @db.close

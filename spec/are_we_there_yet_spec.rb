@@ -233,6 +233,14 @@ describe AreWeThereYet do
       run.first.should_not be_nil
     end
 
+    it "stores the UTC time value for the relevant run" do
+      mock_time = mock(Time, :strftime => '1970-01-01 00:00:00')
+      mock_time.should_receive(:utc).and_return(mock_time)
+      Time.stub(:now).and_return(mock_time)
+
+      @awty.close
+    end
+
     it "does not update the run if runs are not being tracked" do
       connection = SQLite3::Database.new(@db_name)
       connection.execute("DROP TABLE runs")
