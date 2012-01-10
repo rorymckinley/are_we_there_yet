@@ -32,7 +32,7 @@ end
 
 def index_exists?(database_location,table_name,index_name)
   SQLite3::Database.new(database_location).execute(
-    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = '#{index_name}' AND tbl_name = '#{table_name}'"
+    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = '#{table_name}_#{index_name}_index' AND tbl_name = '#{table_name}'"
   ).any?
 end
 
@@ -40,5 +40,11 @@ module Spec
   module Example
     class ExampleProxy
     end
+  end
+end
+
+class Symbol
+  def <=>(other_symbol)
+    self.to_s <=> other_symbol.to_s
   end
 end

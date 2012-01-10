@@ -1,9 +1,11 @@
 require "spec/runner/formatter/base_formatter" unless defined? AWTY_SPEC_RUN
 require 'sqlite3'
+require 'sequel'
 
 class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   def initialize(options,where)
     @db = SQLite3::Database.new(where)
+    @db2 = Sequel.connect("sqlite://#{where}")
 
     create_tables
 
@@ -88,21 +90,36 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   end
   
   def create_tables
-    existing_tables = @db.execute("SELECT name FROM sqlite_master")
-
-    if existing_tables.empty?
-      @db.transaction do |db|
-        db.execute("CREATE TABLE runs(id INTEGER PRIMARY KEY, started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ended_at TIMESTAMP)")
-        db.execute("CREATE TABLE files(id INTEGER PRIMARY KEY, path VARCHAR(255))")
-        db.execute("CREATE INDEX path ON files (path)")
-        db.execute("CREATE TABLE examples(id INTEGER PRIMARY KEY, file_id INTEGER, description TEXT)")
-        db.execute("CREATE INDEX file_description ON examples (file_id, description)")
-        db.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, run_id INTEGER )")
+    @db2.transaction do
+      if @db2.tables.empty?
+        @db2.create_table(:runs) do 
+          primary_key :id
+          DateTime :started_at
+          DateTime :ended_at
+        end
+        @db2.create_table(:files) do
+          primary_key :id
+          String :path
+          index :path
+        end
+        @db2.create_table(:examples) do
+          primary_key :id
+          Integer :file_id
+          column :description, :text
+          index [:file_id, :description]
+        end
+        @db2.create_table(:metrics) do
+          primary_key :id
+          Integer :example_id
+          Float :execution_time
+          DateTime :created_at
+          Integer :run_id
+        end
       end
     end
   end
 
   def tracking_runs?
-    @tracking_runs ||= @db.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'runs'").any?
+    @db2.tables.include? :runs
   end
 end

@@ -6,6 +6,7 @@ describe AreWeThereYet do
     File.unlink(@db_name) if File.exists? @db_name
 
     @connection = SQLite3::Database.new(@db_name)
+    @connection2 = Sequel.connect("sqlite://#{@db_name}")
   end
 
   it "extends the RSpec formatter" do
@@ -13,25 +14,17 @@ describe AreWeThereYet do
   end
 
   describe "#initialize" do
-    it "opens a connection to the specified database" do
-      SQLite3::Database.should_receive(:new).with('/path/to/db.sqlite').and_return(mock(SQLite3::Database).as_null_object)
-      AreWeThereYet.new({},'/path/to/db.sqlite')
-    end
-
     it "creates the necessary tables in the database" do
       AreWeThereYet.new({},@db_name)
 
-      table_exists?(@db_name, 'files').should be_true
-      table_exists?(@db_name, 'examples').should be_true
-      table_exists?(@db_name, 'metrics').should be_true
-      table_exists?(@db_name, 'runs').should be_true
+      @connection2.tables.sort.should == [:examples, :files, :metrics, :runs]
     end
 
     it "creates the necessary indexes" do
       AreWeThereYet.new({},@db_name)
 
       index_exists?(@db_name, 'files', 'path').should be_true
-      index_exists?(@db_name, 'examples', 'file_description').should be_true
+      index_exists?(@db_name, 'examples', 'file_id_description').should be_true
     end
 
     it "does not create the tables if they already exist" do
@@ -42,15 +35,15 @@ describe AreWeThereYet do
     end
 
     it "rolls back table creation on error" do
-      @connection.stub(:execute) do |arg|
-        if arg =~ /metrics/
+      broken_connection = mock(Sequel::SQLite::Database, :tables => [])
+      broken_connection.stub(:create_table) do |arg, bl|
+        if arg == :metrics
           raise RuntimeError
         else
-          connection.execute2(arg)
-          []
+          @connection2.create_table(arg, &bl)
         end
       end
-      SQLite3::Database.should_receive(:new).and_return(@connection)
+      Sequel.should_receive(:connect).and_return(broken_connection)
 
       expect { AreWeThereYet.new({},@db_name) }.should raise_error
 
