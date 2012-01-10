@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{are_we_there_yet}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rory McKinley"]
-  s.date = %q{2012-01-09}
+  s.date = %q{2012-01-10}
   s.description = %q{Provides detailed profiling data for RSpec runs in a SQLite3 DB}
   s.email = %q{rorymckinley@gmail.com}
   s.extra_rdoc_files = [
