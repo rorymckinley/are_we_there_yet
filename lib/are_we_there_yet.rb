@@ -17,12 +17,12 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   end
 
   def example_passed(example)
-    @db.transaction do |db|
-      location_id = persist_file(db, example)
+    @db2.transaction do
+      location_id = persist_file(example)
 
-      example_id = persist_example(db, example, location_id)
+      example_id = persist_example(example, location_id)
 
-      persist_metric(db, example_id)
+      persist_metric(example_id)
     end
   end
 
@@ -38,54 +38,35 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   private
 
   def log_run
-    @db.execute("INSERT INTO runs(id) VALUES(NULL)") if tracking_runs?
-    @run_id = @db.last_insert_row_id
+    @run_id = @db2[:runs].insert(:started_at => Time.now.utc) if tracking_runs?
   end
 
-  def persist_file(db, example)
+  def persist_file(example)
     path = example.location.split(':').first
 
-    locations = db.execute("SELECT id FROM files WHERE path = :path", :path => path)
-    if locations.empty?
-      db.execute("INSERT INTO files(path) VALUES(:path)", :path => path)
-      db.last_insert_row_id
+    file = @db2[:files].where(:path => path).first
+    if file
+      file[:id]
     else
-      locations.first[0]
+      @db2[:files].insert(:path => path)
     end
   end
 
-  def persist_example(db, example, file_id)
-    examples = db.execute(
-      "SELECT id FROM examples WHERE file_id = :file_id AND description = :description",
-      :file_id => file_id,
-      :description => example.description
-    )
-    if examples.empty?
-      db.execute(
-        "INSERT INTO examples(file_id, description) VALUES(:file_id, :description)",
-        :file_id => file_id,
-        :description => example.description
-      )
-      db.last_insert_row_id
+  def persist_example(example, file_id)
+    persisted_example = @db2[:examples].where[:file_id => file_id, :description => example.description]
+    if persisted_example
+      persisted_example[:id]
     else
-      examples.first[0]
+      @db2[:examples].insert(:file_id => file_id, :description => example.description)
     end
   end
 
-  def persist_metric(db, example_id)
+  def persist_metric(example_id)
+    execution_time = Time.now - @start
     if tracking_runs?
-      db.execute(
-        "INSERT INTO metrics(example_id, execution_time, run_id) VALUES(:example_id, :execution_time, :run_id)",
-        :example_id => db.last_insert_row_id,
-        :execution_time => Time.now - @start,
-        :run_id => @run_id
-      )
+      @db2[:metrics].insert(:example_id => example_id, :created_at => Time.now, :execution_time => execution_time, :run_id => @run_id)
     else
-      db.execute(
-        "INSERT INTO metrics(example_id, execution_time) VALUES(:example_id, :execution_time)",
-        :example_id => db.last_insert_row_id,
-        :execution_time => Time.now - @start
-      )
+      @db2[:metrics].insert(:example_id => example_id, :created_at => Time.now, :execution_time => execution_time)
     end
   end
   

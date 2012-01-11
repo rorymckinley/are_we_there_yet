@@ -51,8 +51,13 @@ describe AreWeThereYet do
     end
 
     it "logs the start of a spec run" do
+      mock_time = Time.now
+      mock_time.should_receive(:utc).and_return(mock_time)
+      Time.stub(:now).and_return(mock_time)
+
       AreWeThereYet.new({},@db_name)
 
+      @connection2[:runs].first[:started_at].should_not be_nil
       run = @connection.get_first_row("SELECT id, started_at FROM runs")
       run.should_not be_nil
       run[1].should_not be_nil
@@ -60,15 +65,15 @@ describe AreWeThereYet do
 
     it "does not log the start of a spec run if there is no table in the database" do
       # This to maintain backwards-compatibility with DBs created by v0.1.0
-      @connection.stub(:execute) do |arg|
-        if arg =~ /CREATE TABLE runs/
-          # Do nothing
+      broken_connection = mock(Sequel::SQLite::Database, :tables => @connection2.tables, :transaction => nil)
+      broken_connection.stub(:create_table) do |arg, bl|
+        if arg == :metrics
+          # Do nothing - runs table is not created
         else
-          @connection.execute2(arg)
-          []
+          @connection2.create_table(arg, &bl)
         end
       end
-      SQLite3::Database.should_receive(:new).and_return(@connection)
+      Sequel.should_receive(:connect).and_return(broken_connection)
 
       expect { AreWeThereYet.new({},@db_name) }.should_not raise_error
     end
@@ -108,10 +113,10 @@ describe AreWeThereYet do
       start_time = Time.now - 10
       end_time = Time.now
 
-      Time.should_receive(:now).and_return(start_time)
+      Time.stub!(:now).and_return(start_time)
       @awty.example_started(@mock_example)
 
-      Time.should_receive(:now).and_return(end_time)
+      Time.stub!(:now).and_return(end_time)
       @awty.example_passed(@mock_example)
 
       run = @connection.get_first_row("SELECT id FROM runs")
@@ -120,13 +125,17 @@ describe AreWeThereYet do
       example = @connection.get_first_row("SELECT id FROM examples")
       example_id = example.first
 
-      Time.stub!(:now)
       metrics = @connection.execute("SELECT id, example_id, execution_time, created_at, run_id FROM metrics")
       metrics.size.should == 1
       metrics.first[1].should == example_id
       metrics.first[2].should == end_time - start_time
       metrics.first[3].should_not be_nil
       metrics.first[4].should == run_id
+    end
+
+    it "logs metric creation time as UTC" do
+      pending
+      mock_time
     end
 
     it "does not link the metric to a run if the run table does not exist" do
