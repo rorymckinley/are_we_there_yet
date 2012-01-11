@@ -5,7 +5,6 @@ describe AreWeThereYet do
     @db_name = "/tmp/arewethereyet.sqlite"
     File.unlink(@db_name) if File.exists? @db_name
 
-    @connection = SQLite3::Database.new(@db_name)
     @connection2 = Sequel.connect("sqlite://#{@db_name}")
   end
 
@@ -47,7 +46,7 @@ describe AreWeThereYet do
 
       expect { AreWeThereYet.new({},@db_name) }.should raise_error
 
-      @connection.execute2("SELECT name FROM sqlite_master").size.should == 1 # Execute2 lists fields - size 1 means empty response
+      @connection2.tables.should be_empty
     end
 
     it "logs the start of a spec run" do
@@ -58,9 +57,6 @@ describe AreWeThereYet do
       AreWeThereYet.new({},@db_name)
 
       @connection2[:runs].first[:started_at].should_not be_nil
-      run = @connection.get_first_row("SELECT id, started_at FROM runs")
-      run.should_not be_nil
-      run[1].should_not be_nil
     end
 
     it "does not log the start of a spec run if there is no table in the database" do
@@ -81,7 +77,6 @@ describe AreWeThereYet do
 
   describe "logging a metric for a new file" do
     before(:each) do
-      @connection = SQLite3::Database.new(@db_name)
 
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec:42", :description => "blaah")
@@ -100,13 +95,11 @@ describe AreWeThereYet do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      file = @connection.get_first_row("SELECT id FROM files")
-      file_id = file.first
-      examples = @connection.execute("SELECT id, file_id, description FROM examples")
+      file_id = @connection2[:files].first[:id]
 
-      examples.size.should == 1
-      examples.first[1].should == file_id
-      examples.first[2].should == @mock_example.description
+      @connection2[:examples].count.should == 1
+      @connection2[:examples].first[:file_id].should == file_id
+      @connection2[:examples].first[:description].should == @mock_example.description
     end
 
     it "creates an entry for the total execution time" do
@@ -119,31 +112,39 @@ describe AreWeThereYet do
       Time.stub!(:now).and_return(end_time)
       @awty.example_passed(@mock_example)
 
-      run = @connection.get_first_row("SELECT id FROM runs")
-      run_id = run.first
+      run_id = @connection2[:runs].first[:id]
+      example_id = @connection2[:examples].first[:id]
 
-      example = @connection.get_first_row("SELECT id FROM examples")
-      example_id = example.first
-
-      metrics = @connection.execute("SELECT id, example_id, execution_time, created_at, run_id FROM metrics")
-      metrics.size.should == 1
-      metrics.first[1].should == example_id
-      metrics.first[2].should == end_time - start_time
-      metrics.first[3].should_not be_nil
-      metrics.first[4].should == run_id
+      @connection2[:metrics].count.should ==1
+      metric = @connection2[:metrics].first
+      metric[:example_id].should == example_id
+      metric[:execution_time].should == end_time - start_time
+      metric[:created_at].should_not be_nil
+      metric[:run_id].should == run_id
     end
 
-    it "logs metric creation time as UTC" do
-      pending
-      mock_time
+    it "tracks metric creation using UTC time" do
+      mock_time = Time.now
+      utc_time = Time.now - 7200
+      mock_time.should_receive(:utc).and_return(utc_time)
+      Time.stub(:now).and_return(mock_time)
+
+      @awty.example_started(@mock_example)
+      @awty.example_passed(@mock_example)
+
+      @connection2[:metrics].first[:created_at].should == utc_time
     end
 
     it "does not link the metric to a run if the run table does not exist" do
       # To maintain compatibility with version 0.1.0
       AreWeThereYet.any_instance.should_receive(:tracking_runs?).and_return(false)
 
-      @connection.execute("DROP TABLE metrics")
-      @connection.execute("CREATE TABLE metrics(id INTEGER PRIMARY KEY, example_id INTEGER, execution_time FLOAT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+      @connection2.create_table!(:metrics) do
+        primary_key :id
+        Integer :example_id
+        Float :execution_time
+        DateTime :created_at
+      end
 
       @awty.example_started(@mock_example)
       expect { @awty.example_passed(@mock_example) }.should_not raise_error
@@ -152,8 +153,6 @@ describe AreWeThereYet do
 
   describe "logging a metric for an existing file" do
     before(:each) do
-      @connection = SQLite3::Database.new(@db_name)
-
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
       @another_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "yippee!")
@@ -166,18 +165,13 @@ describe AreWeThereYet do
       @awty.example_started(@another_example)
       @awty.example_passed(@another_example)
 
-      examples = @connection.execute("SELECT description FROM examples")
-      examples.size.should == 2
-
-      files = @connection.execute("SELECT id FROM files")
-      files.size.should == 1
+      @connection2[:examples].count.should == 2
+      @connection2[:files].count.should == 1
     end
   end
 
   describe "logging a metric for an existing example" do
     before(:each) do
-      @connection = SQLite3::Database.new(@db_name)
-
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
     end
@@ -189,18 +183,13 @@ describe AreWeThereYet do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      metrics = @connection.execute("SELECT id FROM metrics")
-      metrics.size.should == 2
-
-      examples = @connection.execute("SELECT description FROM examples")
-      examples.size.should == 1
+      @connection2[:metrics].count.should == 2
+      @connection2[:examples].count.should == 1
     end
   end
 
   describe "handling errors when logging" do
     before(:each) do
-      @connection = SQLite3::Database.new(@db_name)
-
       @awty = AreWeThereYet.new({}, @db_name)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
       @awty.example_started(@mock_example)
@@ -226,7 +215,7 @@ describe AreWeThereYet do
     end
 
     it "closes the connection to the database" do
-      SQLite3::Database.any_instance.should_receive(:close)
+      Sequel::SQLite::Database.any_instance.should_receive(:disconnect)
       @awty.close
     end
 
@@ -238,9 +227,9 @@ describe AreWeThereYet do
     end
 
     it "stores the UTC time value for the relevant run" do
-      mock_time = mock(Time, :strftime => '1970-01-01 00:00:00')
-      mock_time.should_receive(:utc).and_return(mock_time)
-      Time.stub(:now).and_return(mock_time)
+      time = Time.now
+      time.should_receive(:utc).and_return(time - 7200)
+      Time.stub(:now).and_return(time)
 
       @awty.close
     end

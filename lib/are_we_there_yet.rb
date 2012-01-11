@@ -4,7 +4,6 @@ require 'sequel'
 
 class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   def initialize(options,where)
-    @db = SQLite3::Database.new(where)
     @db2 = Sequel.connect("sqlite://#{where}")
 
     create_tables
@@ -27,12 +26,8 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
   end
 
   def close
-    @db.execute(
-      "UPDATE runs SET ended_at = :end_time WHERE id = :run_id",
-      :end_time => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S"), 
-      :run_id => @run_id
-    ) if tracking_runs?
-    @db.close
+    @db2[:runs].where(:id => @run_id).update(:ended_at => Time.now.utc) if tracking_runs?
+    @db2.disconnect
   end
 
   private
@@ -54,6 +49,7 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
 
   def persist_example(example, file_id)
     persisted_example = @db2[:examples].where[:file_id => file_id, :description => example.description]
+
     if persisted_example
       persisted_example[:id]
     else
@@ -63,11 +59,11 @@ class AreWeThereYet < Spec::Runner::Formatter::BaseFormatter
 
   def persist_metric(example_id)
     execution_time = Time.now - @start
-    if tracking_runs?
-      @db2[:metrics].insert(:example_id => example_id, :created_at => Time.now, :execution_time => execution_time, :run_id => @run_id)
-    else
-      @db2[:metrics].insert(:example_id => example_id, :created_at => Time.now, :execution_time => execution_time)
-    end
+
+    metric_data = { :example_id => example_id, :created_at => Time.now.utc, :execution_time => execution_time }
+    metric_data.merge!( :run_id => @run_id ) if tracking_runs?
+
+    @db2[:metrics].insert(metric_data)
   end
   
   def create_tables
