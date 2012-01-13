@@ -1,5 +1,6 @@
 source "http://rubygems.org"
-gem "sqlite3", "~>1.3.0"
+gem "sqlite3", "~> 1.3.0"
+gem "sequel", "~> 3.31.0"
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 
