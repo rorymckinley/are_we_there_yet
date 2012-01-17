@@ -12,13 +12,13 @@ module AreWeThereYet
       @start = Time.now
     end
 
-    def example_passed(example)
+    def example_passed(example, options={})
       @db2.transaction do
         location_id = persist_file(example)
 
         example_id = persist_example(example, location_id)
 
-        persist_metric(example_id)
+        persist_metric(example_id, options)
       end
     end
 
@@ -54,8 +54,8 @@ module AreWeThereYet
       end
     end
 
-    def persist_metric(example_id)
-      execution_time = Time.now - @start
+    def persist_metric(example_id, options)
+      execution_time = options[:execution_time] || Time.now - @start
 
       metric_data = { :example_id => example_id, :created_at => Time.now.utc, :execution_time => execution_time }
       metric_data.merge!( :run_id => @run_id ) if tracking_runs?

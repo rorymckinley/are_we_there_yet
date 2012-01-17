@@ -8,7 +8,7 @@ module AreWeThereYet
 
     def list_files
       execution_times = @db[:files].join(:examples, :file_id => :id).join(:metrics, :example_id => :id)
-      { :file => execution_times.first[:path], :execution_time => execution_times.first[:execution_time] }
+      [{ :file => execution_times.first[:path], :execution_time => execution_times.first[:execution_time] }]
     end
   end
 end
