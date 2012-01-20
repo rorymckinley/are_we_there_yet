@@ -7,20 +7,22 @@ describe AreWeThereYet::Profiler do
   end
 
   it "returns a list of the spec files together with the average time to execute" do
-    metric_sets = { :runs => [[{:location => "/path/to/spec", :description => "blaah", :execution_time => 10}]]}
+    metric_sets = { :runs => [
+      [
+        { :location => "/path/to/spec", :description => "blaah", :execution_time => 10 },
+        { :location => "/path/to/other/spec", :description => "asdfghij", :execution_time => "5" }
+      ],
+      [
+        { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
+      ]
+    ]}
     MetricFactory.new(@db_name).add_metrics(metric_sets)
-    # recorder = AreWeThereYet::Recorder.new({}, @db_name)
-    # mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
-    # end_time = Time.now
-    # start_time = end_time - 10
-
-    # Time.stub!(:now).and_return(start_time)
-    # recorder.example_started(mock_example)
-
-    # Time.stub!(:now).and_return(end_time)
-    # recorder.example_passed(mock_example)
 
     profiler = AreWeThereYet::Profiler.new(@db_name)
-    profiler.list_files.should == [{:file => "/path/to/spec", :execution_time => 10.0}]
+    file_list = profiler.list_files
+    file_list.should == [
+      { :file => "/path/to/spec", :average_execution_time => 20.0 },
+      { :file => "/path/to/other/spec", :average_execution_time => 5.0 },
+    ]
   end
 end
