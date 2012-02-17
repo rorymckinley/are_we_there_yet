@@ -1,12 +1,13 @@
 require 'spec_helper'
 
-describe AreWeThereYet::Profiler do
+describe AreWeThereYet::Example do
   before(:each) do
     @db_name = '/tmp/writer_spec_db.sqlite'
     File.unlink(@db_name) if File.exists? @db_name
+    DataMapper.setup(:default, "sqlite://#{@db_name}")
   end
 
-  it "returns a list of the spec files ordered by descending average execution time" do
+  it "averages the time taken across all runs" do
     metric_sets = { :runs => [
       [
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 10 },
@@ -14,15 +15,14 @@ describe AreWeThereYet::Profiler do
       ],
       [
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
-      ]
+      ],
+      [
+        { :location => "/path/to/spec", :description => "blaah", :execution_time => 80.75 },
+      ],
     ]}
     MetricFactory.new(@db_name).add_metrics(metric_sets)
 
-    profiler = AreWeThereYet::Profiler.new(@db_name)
-    file_list = profiler.list_files
-    file_list.should == [
-      { :file => "/path/to/spec", :average_execution_time => 20.0 },
-      { :file => "/path/to/other/spec", :average_execution_time => 5.0 },
-    ]
+    ex = AreWeThereYet::Example.first(:description => "blaah")
+    ex.average_time.should == 40.25
   end
 end
