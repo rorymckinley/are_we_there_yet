@@ -10,10 +10,12 @@ describe AreWeThereYet::Profiler do
     metric_sets = { :runs => [
       [
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 10 },
+        { :location => "/path/to/spec", :description => "blaah_some_more", :execution_time => 5 },
         { :location => "/path/to/other/spec", :description => "asdfghij", :execution_time => "5" }
       ],
       [
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
+        { :location => "/path/to/spec", :description => "blaah_some_more", :execution_time => 19 },
       ]
     ]}
     MetricFactory.new(@db_name).add_metrics(metric_sets)
@@ -21,7 +23,7 @@ describe AreWeThereYet::Profiler do
     profiler = AreWeThereYet::Profiler.new(@db_name)
     file_list = profiler.list_files
     file_list.should == [
-      { :file => "/path/to/spec", :average_execution_time => 20.0 },
+      { :file => "/path/to/spec", :average_execution_time => 32.0 },
       { :file => "/path/to/other/spec", :average_execution_time => 5.0 },
     ]
   end

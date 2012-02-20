@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe AreWeThereYet::Example do
   before(:each) do
-    @db_name = '/tmp/writer_spec_db.sqlite'
+    @db_name = '/tmp/example_spec_db.sqlite'
     File.unlink(@db_name) if File.exists? @db_name
     DataMapper.setup(:default, "sqlite://#{@db_name}")
   end

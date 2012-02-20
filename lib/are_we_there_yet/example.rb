@@ -10,7 +10,6 @@ module AreWeThereYet
     has n, :metrics, "AreWeThereYet::Metric"
 
     def average_time
-      puts metrics.inspect
       metrics.avg(:execution_time)
     end
   end
