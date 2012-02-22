@@ -8,6 +8,10 @@ module AreWeThereYet
       sort_file_averages average_file_execution_times
     end
 
+    def list_examples(file_path)
+      file = File.first(:path => file_path)
+      example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
+    end
     private
 
     def average_file_execution_times

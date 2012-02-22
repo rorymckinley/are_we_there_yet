@@ -12,5 +12,9 @@ module AreWeThereYet
     def average_time
       metrics.avg(:execution_time)
     end
+
+    def to_s
+      description
+    end
   end
 end

@@ -25,4 +25,10 @@ describe AreWeThereYet::Example do
     ex = AreWeThereYet::Example.first(:description => "blaah")
     ex.average_time.should == 40.25
   end
+
+  it "uses the example description as the string representation for the class" do
+    ex = AreWeThereYet::Example.new
+    ex.description = "Something interesting"
+    ex.to_s.should == ex.description
+  end
 end

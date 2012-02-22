@@ -6,6 +6,8 @@ module AreWeThereYet
     property :id, Serial
     property :path, String
 
+    has n, :examples, "AreWeThereYet::Example"
+
     def to_s
       path
     end
