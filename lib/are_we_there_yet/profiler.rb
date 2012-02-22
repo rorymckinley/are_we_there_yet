@@ -5,17 +5,23 @@ module AreWeThereYet
     end
 
     def list_files
-      examples = Example.all
+      sort_file_averages average_file_execution_times
+    end
 
-      example_averages = examples.map { |ex| { :file => ex.file.to_s, :average_execution_time => ex.average_time } }
+    private
 
-      file_averages = example_averages.inject({}) do |output, average_hash|
+    def average_file_execution_times
+      example_averages = Example.all.map { |ex| { :file => ex.file.to_s, :average_execution_time => ex.average_time } }
+
+      example_averages.inject({}) do |output, average_hash|
         output[average_hash[:file]] ||= 0.0
         output[average_hash[:file]] += average_hash[:average_execution_time]
         output
       end
+    end
 
-      file_averages_for_sorting = file_averages.inject([]) do |output,file_time|
+    def sort_file_averages(file_averages)
+      file_averages_for_sorting = average_file_execution_times.inject([]) do |output,file_time|
         output << { :file => file_time.first, :average_execution_time => file_time.last }
         output
       end
