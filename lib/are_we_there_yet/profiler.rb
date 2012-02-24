@@ -11,6 +11,8 @@ module AreWeThereYet
     def list_examples(file_path)
       file = File.first(:path => file_path)
       example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
+
+      example_averages_for_sorting.sort { |x,y| y[:average_execution_time] <=> x[:average_execution_time] }
     end
     private
 
