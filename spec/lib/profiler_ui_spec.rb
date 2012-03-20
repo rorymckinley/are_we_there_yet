@@ -30,4 +30,13 @@ describe AreWeThereYet::ProfilerUI do
       AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'files')
     end
   end
+
+  context "example listing" do
+    it "outputs an example listing for a given file" do
+      output_matcher = /Example\s+Average Execution Time\n\n#{@description}\s+#{@time}\n/
+      @mock_io.should_receive(:write).with(output_matcher)
+
+      AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'examples', :file_path => '/path/to/spec')
+    end
+  end
 end
