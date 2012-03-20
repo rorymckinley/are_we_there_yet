@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require '/home/rory/Hetzner/src_git/are_we_there_yet/lib/are_we_there_yet'
+
+if ARGV.empty?
+  STDOUT.write("AreWeThereYet")
+else
+  AreWeThereYet::ProfilerUI.get_profiler_output(ARGV[0], :listing_type => 'file').each do |line|
+    STDOUT.write line
+  end
+end
