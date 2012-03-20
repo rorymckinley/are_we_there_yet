@@ -6,7 +6,7 @@ module AreWeThereYet
     property :id, Serial
     property :description, String
 
-    belongs_to :file, :model => "AreWeThereYet::File"
+    belongs_to :spec_file, :model => "AreWeThereYet::SpecFile"
     has n, :metrics, "AreWeThereYet::Metric"
 
     def average_time

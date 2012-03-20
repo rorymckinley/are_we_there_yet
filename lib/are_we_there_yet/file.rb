@@ -1,7 +1,7 @@
 module AreWeThereYet
-  class File
+  class SpecFile
     include DataMapper::Resource
-    storage_names[:default] = "files"
+    storage_names[:default] = "spec_files"
 
     property :id, Serial
     property :path, String

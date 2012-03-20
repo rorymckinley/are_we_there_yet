@@ -16,15 +16,15 @@ describe AreWeThereYet::Recorder do
     it "creates the necessary tables in the database" do
       AreWeThereYet::Recorder.new({},@db_name)
 
-      @connection.tables.sort.should == [:examples, :files, :metrics, :runs]
+      @connection.tables.sort.should == [:examples, :metrics, :runs, :spec_files]
     end
 
     it "creates the necessary indexes" do
       AreWeThereYet::Recorder.new({},@db_name)
 
-      @connection.indexes(:files).should == { :files_path_index => {:unique=>false, :columns=>[:path]}}
+      @connection.indexes(:spec_files).should == { :spec_files_path_index => {:unique=>false, :columns=>[:path]}}
       @connection.indexes(:examples).should == {
-          :examples_file_id_description_index => {:unique=>false, :columns=>[:file_id, :description]}
+          :examples_spec_file_id_description_index => {:unique=>false, :columns=>[:spec_file_id, :description]}
       }
     end
 
@@ -88,7 +88,7 @@ describe AreWeThereYet::Recorder do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      files = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM files")
+      files = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM spec_files")
       files.size.should == 1
       files.first[1].should == @mock_example.location.split(':').first
     end
@@ -97,10 +97,10 @@ describe AreWeThereYet::Recorder do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      file_id = @connection[:files].first[:id]
+      file_id = @connection[:spec_files].first[:id]
 
       @connection[:examples].count.should == 1
-      @connection[:examples].first[:file_id].should == file_id
+      @connection[:examples].first[:spec_file_id].should == file_id
       @connection[:examples].first[:description].should == @mock_example.description
     end
 
@@ -183,7 +183,7 @@ describe AreWeThereYet::Recorder do
       @awty.example_passed(@another_example)
 
       @connection[:examples].count.should == 2
-      @connection[:files].count.should == 1
+      @connection[:spec_files].count.should == 1
     end
   end
 
@@ -217,7 +217,7 @@ describe AreWeThereYet::Recorder do
 
       expect { @awty.example_passed(@mock_example) }.should raise_error
 
-      @connection[:files].count.should == 0
+      @connection[:spec_files].count.should == 0
       @connection[:examples].count.should == 0
     end
   end

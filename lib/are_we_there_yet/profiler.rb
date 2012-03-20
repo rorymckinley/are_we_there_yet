@@ -9,7 +9,7 @@ module AreWeThereYet
     end
 
     def list_examples(file_path)
-      file = File.first(:path => file_path)
+      file = SpecFile.first(:path => file_path)
       example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
 
       example_averages_for_sorting.sort { |x,y| y[:average_execution_time] <=> x[:average_execution_time] }
@@ -17,7 +17,7 @@ module AreWeThereYet
     private
 
     def average_file_execution_times
-      example_averages = Example.all.map { |ex| { :file => ex.file.to_s, :average_execution_time => ex.average_time } }
+      example_averages = Example.all.map { |ex| { :file => ex.spec_file.to_s, :average_execution_time => ex.average_time } }
 
       example_averages.inject({}) do |output, average_hash|
         output[average_hash[:file]] ||= 0.0

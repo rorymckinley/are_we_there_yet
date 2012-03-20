@@ -36,21 +36,21 @@ module AreWeThereYet
     def persist_file(example)
       path = example.location.split(':').first
 
-      file = @db2[:files].where(:path => path).first
+      file = @db2[:spec_files].where(:path => path).first
       if file
         file[:id]
       else
-        @db2[:files].insert(:path => path)
+        @db2[:spec_files].insert(:path => path)
       end
     end
 
-    def persist_example(example, file_id)
-      persisted_example = @db2[:examples].where[:file_id => file_id, :description => example.description]
+    def persist_example(example, spec_file_id)
+      persisted_example = @db2[:examples].where[:spec_file_id => spec_file_id, :description => example.description]
 
       if persisted_example
         persisted_example[:id]
       else
-        @db2[:examples].insert(:file_id => file_id, :description => example.description)
+        @db2[:examples].insert(:spec_file_id => spec_file_id, :description => example.description)
       end
     end
 
@@ -71,16 +71,16 @@ module AreWeThereYet
             DateTime :started_at
             DateTime :ended_at
           end
-          @db2.create_table(:files) do
+          @db2.create_table(:spec_files) do
             primary_key :id
             String :path
             index :path
           end
           @db2.create_table(:examples) do
             primary_key :id
-            Integer :file_id
+            Integer :spec_file_id
             column :description, :text
-            index [:file_id, :description]
+            index [:spec_file_id, :description]
           end
           @db2.create_table(:metrics) do
             primary_key :id
