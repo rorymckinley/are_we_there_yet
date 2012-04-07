@@ -11,5 +11,9 @@ module AreWeThereYet
     def to_s
       path
     end
+
+    def self.for_path(path)
+      first(:path => path)
+    end
   end
 end
