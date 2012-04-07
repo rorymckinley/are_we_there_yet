@@ -3,6 +3,7 @@ require 'spec_helper'
 describe AreWeThereYet::SpecFile do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
+    DataMapper.setup(:default, "sqlite://#{@db_name}")
   end
 
   after(:each) do
