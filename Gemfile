@@ -1,8 +1,6 @@
 source "http://rubygems.org"
 gem "sqlite3", "~> 1.3.0"
 gem "sequel", "~> 3.31.0"
-gem "dm-sqlite-adapter", "~> 1.2.0"
-gem "datamapper", "~> 1.2.0"
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 

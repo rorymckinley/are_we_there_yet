@@ -1,7 +1,6 @@
 module AreWeThereYet
   class Profiler
     def initialize(db_location)
-      DataMapper.setup(:default, "sqlite://#{db_location}")
       @db = Sequel.connect("sqlite://#{db_location}")
     end
 
