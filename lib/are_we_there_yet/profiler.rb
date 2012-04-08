@@ -2,6 +2,7 @@ module AreWeThereYet
   class Profiler
     def initialize(db_location)
       DataMapper.setup(:default, "sqlite://#{db_location}")
+      @db = Sequel.connect("sqlite://#{db_location}")
     end
 
     def list_files
@@ -9,7 +10,7 @@ module AreWeThereYet
     end
 
     def list_examples(file_path)
-      file = SpecFile.first(:path => file_path)
+      file = SpecFile.for_path(file_path) { @db }
       example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
 
       sorted_output(example_averages_for_sorting)

@@ -13,6 +13,8 @@ module AreWeThereYet
     end
 
     def self.for_path(path)
+      db = yield
+
       first(:path => path)
     end
   end

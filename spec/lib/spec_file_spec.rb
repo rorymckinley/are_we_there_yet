@@ -4,6 +4,7 @@ describe AreWeThereYet::SpecFile do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
     DataMapper.setup(:default, "sqlite://#{@db_name}")
+    @db = Sequel.connect("sqlite://#{@db_name}")
 
     metric_sets = { :runs => [
       [
@@ -14,7 +15,7 @@ describe AreWeThereYet::SpecFile do
     ]}
     MetricFactory.new(@db_name).add_metrics(metric_sets)
 
-    @f = AreWeThereYet::SpecFile.for_path("/path/to/spec")
+    @f = AreWeThereYet::SpecFile.for_path("/path/to/spec") { @db }
   end
 
   after(:each) do
