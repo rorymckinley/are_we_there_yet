@@ -3,7 +3,6 @@ require 'spec_helper'
 describe AreWeThereYet::SpecFile do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
-    DataMapper.setup(:default, "sqlite://#{@db_name}")
     @db = Sequel.connect("sqlite://#{@db_name}")
 
     metric_sets = { :runs => [
@@ -20,6 +19,12 @@ describe AreWeThereYet::SpecFile do
 
   after(:each) do
     File.unlink(@db_name) if File.exists? @db_name
+  end
+
+  it "assigns the path and id passed to it when initialised" do
+    f = AreWeThereYet::SpecFile.new(:id => 999, :path => '/bl/ah') { @db }
+    f.path.should == '/bl/ah'
+    f.id.should == 999
   end
 
   it "exposes the id generated for the file" do

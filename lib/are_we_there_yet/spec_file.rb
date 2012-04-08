@@ -1,12 +1,13 @@
 module AreWeThereYet
   class SpecFile
-    include DataMapper::Resource
-    storage_names[:default] = "spec_files"
+    attr_reader :path, :id
 
-    property :id, Serial
-    property :path, String
+    def initialize(options={})
+      @db = yield
 
-    has n, :examples, "AreWeThereYet::Example"
+      @path = options[:path]
+      @id = options[:id]
+    end
 
     def to_s
       path
@@ -15,7 +16,12 @@ module AreWeThereYet
     def self.for_path(path)
       db = yield
 
-      first(:path => path)
+      new(db[:spec_files].where(:path => path).first) { db }
     end
+
+    def examples
+      @db[:examples].where(:spec_file_id => id).map { |ex_data| AreWeThereYet::Example.new(ex_data) { @db } }
+    end
+
   end
 end

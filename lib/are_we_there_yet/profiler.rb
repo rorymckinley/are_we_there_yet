@@ -19,7 +19,8 @@ module AreWeThereYet
     private
 
     def average_file_execution_times
-      example_averages = Example.all.map { |ex| { :file => ex.spec_file.to_s, :average_execution_time => ex.average_time } }
+      all_examples = Example.all { @db }
+      example_averages = all_examples.map { |ex| { :file => ex.spec_file.to_s, :average_execution_time => ex.average_time } }
 
       av_by_file = example_averages.inject({}) do |output, average_hash|
         output[average_hash[:file]] ||= 0.0

@@ -1,9 +1,9 @@
 module AreWeThereYet
   class Metric
-    include DataMapper::Resource
-    storage_names[:default] = "metrics"
-
-    property :id, Serial
-    property :execution_time, Float
+    attr_reader :id, :execution_time
+    def initialize(options={})
+      @id = options[:id]
+      @execution_time = options[:execution_time]
+    end
   end
 end
