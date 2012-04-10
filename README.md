@@ -11,13 +11,17 @@ to STDOUT when spec runs with this formatter.
 
 ## Usage
 
-Usage is fairly simple:
+### Logging of spec execution time
 
 1. Add `require 'are_we_there_yet'` to your `spec_helper.rb` file.
 2. When running the specs pass the name of the class together with the location of your SQLite3 database, e.g:
-  `spec -fAreWeThereYet:/path/to/db.sqlite3 spec`
+  `spec -fAreWeThereYet::Recorder:/path/to/db.sqlite3 spec`
 
 Only passing tests are profiled.
+
+### Displaying results
+
+AWTY has an executable that will dump the results to STDOUT.
 
 ## Data Structure
 
