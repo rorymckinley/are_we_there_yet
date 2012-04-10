@@ -46,13 +46,4 @@ describe AreWeThereYet::ProfilerUI do
         should raise_error AreWeThereYet::ProfilerUI::UnknownListingError
     end
   end
-
-  context "options with string keys" do
-    it "accepts options with string keys as opposed to symbols" do
-      output_matcher = /Example\s+Average Execution Time\n\n#{@description}\s+#{@time}\n/
-      @mock_io.should_receive(:write).with(output_matcher)
-      
-      AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, "list" => 'examples', "file_path" => '/path/to/spec')
-    end
-  end
 end
