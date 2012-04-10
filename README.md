@@ -48,7 +48,7 @@ An example of including AreWeThereYet::Profiler in other Ruby code:
 
     examples_for_file = profiler.list_examples("/path/to/spec")
 
-Details of the output format as well as usage of `AreWeThereYet:;Profiler#list_files` method can be found in
+Details of the output format as well as usage of `AreWeThereYet::Profiler#list_files` method can be found in
 `spec/lib/profiler_spec.rb`.
     
 ## Data Structure
