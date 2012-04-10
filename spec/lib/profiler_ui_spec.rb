@@ -39,4 +39,11 @@ describe AreWeThereYet::ProfilerUI do
       AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'examples', :file_path => '/path/to/spec')
     end
   end
+
+  context "unknown listing" do
+    it "raises an exception" do
+      expect { AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'awesome') }.
+        should raise_error AreWeThereYet::ProfilerUI::UnknownListingError
+    end
+  end
 end
