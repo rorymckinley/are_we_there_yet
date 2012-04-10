@@ -1,2 +1,14 @@
 #!/usr/bin/env ruby
 require 'rubygems'
+
+require 'are_we_there_yet'
+require 'trollop'
+
+opts = Trollop::options do
+  opt :database_location, "Location of database containing spec data", :type => String
+  opt :list, "The type of list required - currently the options are 'files' or 'examples'", :type => String
+  opt :file_path, "The path for the spec file - used when listing examples for a given file", :type => String
+end
+
+AreWeThereYet::ProfilerUI.get_profiler_output(opts.delete(:database_location), STDOUT,
+                                              opts.select { |k,v| ["list", "file_path"].include? k })
