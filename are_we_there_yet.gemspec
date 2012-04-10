@@ -4,14 +4,15 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{are_we_there_yet}
-  s.version = "0.2.1"
+  s.name = "are_we_there_yet"
+  s.version = ""
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rory McKinley"]
-  s.date = %q{2012-01-10}
-  s.description = %q{Provides detailed profiling data for RSpec runs in a SQLite3 DB}
-  s.email = %q{rorymckinley@gmail.com}
+  s.date = "2012-04-10"
+  s.description = "Provides detailed profiling data for RSpec runs in a SQLite3 DB"
+  s.email = "rorymckinley@gmail.com"
+  s.executables = ["are_we_there_yet", "are_we_there_yet"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.md"
@@ -26,37 +27,59 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "are_we_there_yet.gemspec",
+    "bin/are_we_there_yet",
     "lib/are_we_there_yet.rb",
+    "lib/are_we_there_yet/example.rb",
+    "lib/are_we_there_yet/formatter.rb",
+    "lib/are_we_there_yet/metric.rb",
+    "lib/are_we_there_yet/profiler.rb",
+    "lib/are_we_there_yet/profiler_ui.rb",
+    "lib/are_we_there_yet/recorder.rb",
+    "lib/are_we_there_yet/spec_file.rb",
     "spec/are_we_there_yet_spec.rb",
-    "spec/spec_helper.rb"
+    "spec/lib/example_spec.rb",
+    "spec/lib/formatter_spec.rb",
+    "spec/lib/metric_spec.rb",
+    "spec/lib/profiler_spec.rb",
+    "spec/lib/profiler_ui_spec.rb",
+    "spec/lib/spec_file_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/support/metric_factory.rb",
+    "spec/support/spec_classes.rb",
+    "spec/support/symbol.rb"
   ]
-  s.homepage = %q{http://github.com/rorymckinley/are_we_there_yet}
+  s.homepage = "http://github.com/rorymckinley/are_we_there_yet"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Profiler for RSpec 1.3.x}
+  s.rubygems_version = "1.8.19"
+  s.summary = "Profiler for RSpec 1.3.x"
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<trollop>, ["~> 1.16.2"])
+      s.add_runtime_dependency(%q<sequel>, ["~> 3.31.0"])
       s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.0"])
       s.add_development_dependency(%q<rspec>, ["~> 2.7.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.1.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
+      s.add_dependency(%q<trollop>, ["~> 1.16.2"])
+      s.add_dependency(%q<sequel>, ["~> 3.31.0"])
       s.add_dependency(%q<sqlite3>, ["~> 1.3.0"])
       s.add_dependency(%q<rspec>, ["~> 2.7.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_dependency(%q<bundler>, ["~> 1.1.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_dependency(%q<rcov>, [">= 0"])
     end
   else
+    s.add_dependency(%q<trollop>, ["~> 1.16.2"])
+    s.add_dependency(%q<sequel>, ["~> 3.31.0"])
     s.add_dependency(%q<sqlite3>, ["~> 1.3.0"])
     s.add_dependency(%q<rspec>, ["~> 2.7.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+    s.add_dependency(%q<bundler>, ["~> 1.1.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
     s.add_dependency(%q<rcov>, [">= 0"])
   end

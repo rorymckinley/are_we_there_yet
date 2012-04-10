@@ -22,7 +22,6 @@ Jeweler::Tasks.new do |gem|
   gem.email = "rorymckinley@gmail.com"
   gem.authors = ["Rory McKinley"]
   gem.bindir = 'bin'
-  gem.executables << 'are_we_there_yet'
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
