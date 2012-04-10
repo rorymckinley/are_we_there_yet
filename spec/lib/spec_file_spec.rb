@@ -27,6 +27,12 @@ describe AreWeThereYet::SpecFile do
     f.id.should == 999
   end
 
+  it "initialiases with nil values for path and id if a hash of options is not provided" do
+    f = AreWeThereYet::SpecFile.new(nil) { @db }
+    f.path.should be_nil
+    f.id.should be_nil
+  end
+
   it "exposes the id generated for the file" do
     @f.id.should == 1
   end

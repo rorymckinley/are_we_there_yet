@@ -52,4 +52,25 @@ describe AreWeThereYet::Profiler do
       { :example => "blah", :average_execution_time => 12.0 }
     ]
   end
+
+  it "returns an empty list of examples if the given file path cannot be found" do
+    metric_sets = { :runs => [
+      [
+        { :location => "/path/to/spec", :description => "blah", :execution_time => 5 },
+        { :location => "/path/to/spec", :description => "blaah", :execution_time => 10 },
+        { :location => "/path/to/other/spec", :description => "asdfghij", :execution_time => "5" }
+      ],
+      [
+        { :location => "/path/to/spec", :description => "blah", :execution_time => 19 },
+        { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
+      ]
+    ]}
+    MetricFactory.new(@db_name).add_metrics(metric_sets)
+
+    profiler = AreWeThereYet::Profiler.new(@db_name)
+    examples_for_file = profiler.list_examples("/un/known/file")
+
+    examples_for_file.should respond_to :each
+    examples_for_file.should be_empty
+  end
 end

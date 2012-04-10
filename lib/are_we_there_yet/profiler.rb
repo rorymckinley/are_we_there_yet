@@ -9,8 +9,11 @@ module AreWeThereYet
     end
 
     def list_examples(file_path)
-      file = SpecFile.for_path(file_path) { @db }
-      example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
+      if ( file = SpecFile.for_path(file_path) { @db } )
+        example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
+      else
+        example_averages_for_sorting = []
+      end
 
       sorted_output(example_averages_for_sorting)
     end

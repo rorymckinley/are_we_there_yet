@@ -5,8 +5,11 @@ module AreWeThereYet
     def initialize(options={})
       @db = yield
 
-      @path = options[:path]
-      @id = options[:id]
+      if options.respond_to?(:has_key?)
+        @path, @id = options[:path], options[:id]
+      else
+        @path, @id = nil, nil
+      end
     end
 
     def to_s
