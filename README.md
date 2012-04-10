@@ -21,7 +21,25 @@ Only passing tests are profiled.
 
 ### Displaying results
 
-AWTY has an executable that will dump the results to STDOUT.
+AWTY currently offers two methods of listing execution times:
+
+- By file, ordered by descending average execution time.
+- By example, listing all the examples for a given file, ordered by descending average execution time. When listing by example, the 
+file path in question must also be supplied.
+
+The results can either be displayed by using the executable provided by the AWTY gem or by including the gem in code of your choice, 
+and making use of the `AreWeThereYet::Profiler#list_files` or `AreWeThereYet::Profiler#list_examples` methods.
+
+An example of using the executable:
+
+`bundle exec are_we_there_yet --database_location /path/to/results.sqlite3 --list examples --file_path /path/to/spec`
+
+`are_we_there_yet -h` will provide a list of available options.
+
+An example of including AreWeThereYet::Profiler in other Ruby code:
+
+  require 'rubygems'
+  require 'are_we_there_yet'
 
 ## Data Structure
 
