@@ -10,5 +10,5 @@ opts = Trollop::options do
   opt :file_path, "The path for the spec file - used when listing examples for a given file", :type => String
 end
 
-AreWeThereYet::ProfilerUI.get_profiler_output(opts.delete(:database_location), STDOUT,
-                                              opts.select { |k,v| ["list", "file_path"].include? k })
+AreWeThereYet::ProfilerUI.get_profiler_output(opts.delete(:database_location), STDOUT, :list => opts[:list],
+                                              :file_path => opts[:file_path]) 
