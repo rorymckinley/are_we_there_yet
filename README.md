@@ -36,11 +36,21 @@ An example of using the executable:
 
 `are_we_there_yet -h` will provide a list of available options.
 
+The executable currently lists results in a fixed-width format.
+
 An example of including AreWeThereYet::Profiler in other Ruby code:
 
-  require 'rubygems'
-  require 'are_we_there_yet'
+    require 'rubygems'
+    require 'are_we_there_yet'
 
+    # Instantiate the Profiler class with a string containing the path to the location of the database
+    profiler = AreWeThereYet::Profiler.new(@db_name)
+
+    examples_for_file = profiler.list_examples("/path/to/spec")
+
+Details of the output format as well as usage of `AreWeThereYet:;Profiler#list_files` method can be found in
+`spec/lib/profiler_spec.rb`.
+    
 ## Data Structure
 
 The following data is stored in the database:
