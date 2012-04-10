@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.date = "2012-04-10"
   s.description = "Provides detailed profiling data for RSpec runs in a SQLite3 DB"
   s.email = "rorymckinley@gmail.com"
-  s.executables = ["are_we_there_yet", "are_we_there_yet"]
+  s.executables = ["are_we_there_yet"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.md"
@@ -51,7 +51,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/rorymckinley/are_we_there_yet"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.19"
+  s.rubygems_version = "1.8.17"
   s.summary = "Profiler for RSpec 1.3.x"
 
   if s.respond_to? :specification_version then
