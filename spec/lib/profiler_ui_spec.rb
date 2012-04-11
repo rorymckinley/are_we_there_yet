@@ -25,7 +25,7 @@ describe AreWeThereYet::ProfilerUI do
 
   context "file listing" do
     it "writes a file listing togther with headers to STDOUT" do
-      output_matcher = /File Path\s+Average Execution Time\n\n#{@path}\s+#{@time}\n/
+      output_matcher = /File Path.*Average Execution Time.*\n\n.*#{@path}.*#{@time}\n/
       @mock_io.should_receive(:write).with(output_matcher)
 
       AreWeThereYet::ProfilerUI.get_profiler_output(@db, @mock_io, :list => 'files')
@@ -34,7 +34,7 @@ describe AreWeThereYet::ProfilerUI do
 
   context "example listing" do
     it "outputs an example listing for a given file" do
-      output_matcher = /Example\s+Average Execution Time\n\n#{@description}\s+#{@time}\n/
+      output_matcher = /Example.*Average Execution Time.*\n\n.*#{@description}.*#{@time}\n/
       @mock_io.should_receive(:write).with(output_matcher)
 
       AreWeThereYet::ProfilerUI.get_profiler_output(@db, @mock_io, :list => 'examples', :file_path => '/path/to/spec')

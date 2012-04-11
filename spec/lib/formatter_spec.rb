@@ -7,10 +7,10 @@ describe AreWeThereYet::Formatter do
       { :file => "/path/to/other/spec", :average_execution_time => 5.0 },
     ]
     output = [
-      "File Path".ljust(100) + "Average Execution Time".rjust(30),
+      %Q{"File Path","Average Execution Time"},
       "",
-      input[0][:file].ljust(100) + input[0][:average_execution_time].to_s.rjust(30),
-      input[1][:file].ljust(100) + input[1][:average_execution_time].to_s.rjust(30),
+      %Q{"#{input[0][:file]}",#{input[0][:average_execution_time]}},
+      %Q{"#{input[1][:file]}",#{input[1][:average_execution_time]}},
     ].join("\n") + "\n"
 
     AreWeThereYet::Formatter.format_for_output(input).should == output
@@ -22,10 +22,10 @@ describe AreWeThereYet::Formatter do
       { :example => "blah", :average_execution_time => 12.0 }
     ]
     output = [
-      "Example".ljust(100) + "Average Execution Time".rjust(30),
+      %Q{"Example","Average Execution Time"},
       "",
-      input[0][:example].ljust(100) + input[0][:average_execution_time].to_s.rjust(30),
-      input[1][:example].ljust(100) + input[1][:average_execution_time].to_s.rjust(30),
+      %Q{"#{input[0][:example]}",#{input[0][:average_execution_time]}},
+      %Q{"#{input[1][:example]}",#{input[1][:average_execution_time]}},
     ].join("\n") + "\n"
 
     AreWeThereYet::Formatter.format_for_output(input).should == output

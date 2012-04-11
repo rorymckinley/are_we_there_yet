@@ -2,14 +2,14 @@ module AreWeThereYet
   class Formatter
     def self.format_for_output(data)
       if data.first.has_key? :file
-        headers = "File Path".ljust(100) + "Average Execution Time".rjust(30) + "\n\n"
+        headers = %Q{"File Path","Average Execution Time"\n\n}
         data.inject(headers) do |output_string, metric_record|
-          output_string += metric_record[:file].ljust(100) + metric_record[:average_execution_time].to_s.rjust(30) + "\n"
+          output_string += %Q{"#{metric_record[:file]}",#{metric_record[:average_execution_time]}\n}
         end
       else
-        headers = "Example".ljust(100) + "Average Execution Time".rjust(30) + "\n\n"
+        headers = %Q{"Example","Average Execution Time"\n\n}
         data.inject(headers) do |output_string, metric_record|
-          output_string += metric_record[:example].ljust(100) + metric_record[:average_execution_time].to_s.rjust(30) + "\n"
+          output_string += %Q{"#{metric_record[:example]}",#{metric_record[:average_execution_time]}\n}
         end
       end
     end
