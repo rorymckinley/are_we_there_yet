@@ -1,7 +1,7 @@
 module AreWeThereYet
   class Recorder < Spec::Runner::Formatter::BaseFormatter
     def initialize(options,where)
-      @db2 = Sequel.connect("sqlite://#{where}")
+      @db2 = Sequel.connect(where)
 
       create_tables
 

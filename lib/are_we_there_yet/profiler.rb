@@ -1,7 +1,7 @@
 module AreWeThereYet
   class Profiler
-    def initialize(db_location)
-      @db = Sequel.connect("sqlite://#{db_location}")
+    def initialize(db_connection_string)
+      @db = Sequel.connect(db_connection_string)
     end
 
     def list_files

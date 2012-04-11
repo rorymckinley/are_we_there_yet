@@ -3,7 +3,8 @@ require 'spec_helper'
 describe AreWeThereYet::Example do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
-    @db = Sequel.connect("sqlite://#{@db_name}")
+    @db = "sqlite://#{@db_name}"
+    @connection = Sequel.connect(@db)
   end
 
   after(:each) do
@@ -11,7 +12,7 @@ describe AreWeThereYet::Example do
   end
 
   it "is instantiated from a hash containing the necessary data elements" do
-    ex = AreWeThereYet::Example.new(:description => 'test', :spec_file_id => 1, :id => 11) { @db }
+    ex = AreWeThereYet::Example.new(:description => 'test', :spec_file_id => 1, :id => 11) { @connection }
     ex.description.should eql 'test'
     ex.spec_file_id.should eql 1
     ex.id.should eql 11
@@ -30,9 +31,9 @@ describe AreWeThereYet::Example do
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 80.75 },
       ],
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    ex = AreWeThereYet::Example.new(@db[:examples].where(:description => "blaah").first) { @db }
+    ex = AreWeThereYet::Example.new(@connection[:examples].where(:description => "blaah").first) { @connection }
     ex.average_time.should == 40.25
   end
 
@@ -43,15 +44,15 @@ describe AreWeThereYet::Example do
         { :location => "/path/to/other/spec", :description => "asdfghij", :execution_time => "5" }
       ],
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    examples = AreWeThereYet::Example.all { @db }
+    examples = AreWeThereYet::Example.all { @connection }
     examples.size.should == 2
     examples.first.should respond_to :description
   end
 
   it "uses the example description as the string representation for the class" do
-    ex = AreWeThereYet::Example.new(:description => 'Something interesting') { @db }
+    ex = AreWeThereYet::Example.new(:description => 'Something interesting') { @connection }
     ex.to_s.should == 'Something interesting'
   end
 
@@ -61,9 +62,9 @@ describe AreWeThereYet::Example do
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 10 },
       ],
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    ex = AreWeThereYet::Example.new(@db[:examples].first) { @db }
+    ex = AreWeThereYet::Example.new(@connection[:examples].first) { @connection }
     ex.spec_file.path.should == "/path/to/spec"
   end
 end

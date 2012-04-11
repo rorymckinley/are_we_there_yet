@@ -3,6 +3,7 @@ require 'spec_helper'
 describe AreWeThereYet::Profiler do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
+    @db = "sqlite://#{@db_name}"
   end
 
   after(:each) do
@@ -21,9 +22,9 @@ describe AreWeThereYet::Profiler do
         { :location => "/path/to/spec", :description => "blaah_some_more", :execution_time => 19 },
       ]
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    profiler = AreWeThereYet::Profiler.new(@db_name)
+    profiler = AreWeThereYet::Profiler.new(@db)
     file_list = profiler.list_files
     file_list.should == [
       { :file => "/path/to/spec", :average_execution_time => 32.0 },
@@ -43,9 +44,9 @@ describe AreWeThereYet::Profiler do
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
       ]
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    profiler = AreWeThereYet::Profiler.new(@db_name)
+    profiler = AreWeThereYet::Profiler.new(@db)
     examples_for_file = profiler.list_examples("/path/to/spec")
     examples_for_file.should == [
       { :example => "blaah", :average_execution_time => 20.0 },
@@ -65,9 +66,9 @@ describe AreWeThereYet::Profiler do
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 30 },
       ]
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
-    profiler = AreWeThereYet::Profiler.new(@db_name)
+    profiler = AreWeThereYet::Profiler.new(@db)
     examples_for_file = profiler.list_examples("/un/known/file")
 
     examples_for_file.should respond_to :each

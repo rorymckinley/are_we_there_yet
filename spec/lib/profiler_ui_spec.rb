@@ -3,13 +3,14 @@ require 'spec_helper'
 describe AreWeThereYet::ProfilerUI do
   before(:each) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
+    @db = "sqlite://#{@db_name}"
 
     metric_sets = { :runs => [
       [
         { :location => "/path/to/spec", :description => "blaah", :execution_time => 10.0 },
     ]
     ]}
-    MetricFactory.new(@db_name).add_metrics(metric_sets)
+    MetricFactory.new(@db).add_metrics(metric_sets)
 
     @path = metric_sets[:runs][0][0][:location]
     @time = metric_sets[:runs][0][0][:execution_time]
@@ -27,7 +28,7 @@ describe AreWeThereYet::ProfilerUI do
       output_matcher = /File Path\s+Average Execution Time\n\n#{@path}\s+#{@time}\n/
       @mock_io.should_receive(:write).with(output_matcher)
 
-      AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'files')
+      AreWeThereYet::ProfilerUI.get_profiler_output(@db, @mock_io, :list => 'files')
     end
   end
 
@@ -36,13 +37,13 @@ describe AreWeThereYet::ProfilerUI do
       output_matcher = /Example\s+Average Execution Time\n\n#{@description}\s+#{@time}\n/
       @mock_io.should_receive(:write).with(output_matcher)
 
-      AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'examples', :file_path => '/path/to/spec')
+      AreWeThereYet::ProfilerUI.get_profiler_output(@db, @mock_io, :list => 'examples', :file_path => '/path/to/spec')
     end
   end
 
   context "unknown listing" do
     it "raises an exception" do
-      expect { AreWeThereYet::ProfilerUI.get_profiler_output(@db_name, @mock_io, :list => 'awesome') }.
+      expect { AreWeThereYet::ProfilerUI.get_profiler_output(@db, @mock_io, :list => 'awesome') }.
         should raise_error AreWeThereYet::ProfilerUI::UnknownListingError
     end
   end
