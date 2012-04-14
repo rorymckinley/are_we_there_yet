@@ -77,6 +77,11 @@ describe AreWeThereYet::Recorder do
 
       expect { AreWeThereYet::Recorder.new({},@db) }.should_not raise_error
     end
+
+    it "raises an error if the URI provided is invalid" do
+      expect { AreWeThereYet::Recorder.new({}, '/this/is/obviously/bogus') }.
+        should raise_error(AreWeThereYet::InvalidDBLocation, /check that the location is valid/)
+    end
   end
 
   describe "logging a metric for a new file" do
