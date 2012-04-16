@@ -10,6 +10,11 @@ describe AreWeThereYet::Profiler do
     File.unlink(@db_name) if File.exists? @db_name
   end
 
+  it "raises an error if the URI provided is not valid" do
+    expect { AreWeThereYet::Profiler.new('/this/is/obviously/bogus') }.
+        should raise_error(AreWeThereYet::InvalidDBLocation, /check that the location is valid/)
+  end
+
   it "returns a list of the spec files ordered by descending average execution time" do
     metric_sets = { :runs => [
       [
