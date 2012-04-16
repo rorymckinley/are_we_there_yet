@@ -8,7 +8,7 @@ module AreWeThereYet
           "Could not connect to the database specified by the URI - please check that the location is valid"
       end
 
-      create_tables
+      AreWeThereYet::Persistence::Schema.create(@db2)
 
       log_run
     end
