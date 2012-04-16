@@ -11,6 +11,11 @@ end
 module Spec
   module Example
     class ExampleProxy
+      attr_reader :description, :location
+      def initialize(description, location)
+        @description = description
+        @location = location
+      end
     end
   end
 end

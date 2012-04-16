@@ -3,22 +3,56 @@
 ## About
 
 AreWeThereYet is a gem that provides alternative profiling for RSpec 1.3.x for those who are not blessed enough to be using all the
-crunchy goodness that is RSpec 2.x.  Metrics are tracked per file and per example in a SQLite3 database. The location of the 
+crunchy goodness that is RSpec 2.x.  Metrics are tracked per file and per example in a SQLite3 database. The URI of the 
 database is passed through as a parameter when running the specs
 
-AWTY only logs data, so you are currently required to handroll any reporting functionality. There is also, currently no data output
-to STDOUT when spec runs with this formatter.
+AreWeThereYet does not produce any output to STDOUT during the spec run. Howeevr, it does provide some rudimentary reporting that can
+be run against the data in the selected database.
 
 ## Usage
 
-Usage is fairly simple:
+### Logging of spec execution time
 
 1. Add `require 'are_we_there_yet'` to your `spec_helper.rb` file.
-2. When running the specs pass the name of the class together with the location of your SQLite3 database, e.g:
-  `spec -fAreWeThereYet:/path/to/db.sqlite3 spec`
+2. When running the specs pass the name of the class together with a database uri, e.g:
+  `spec -fAreWeThereYet::Recorder:sqlite:///path/to/db.sqlite3 spec`
 
 Only passing tests are profiled.
 
+### Displaying results
+
+AWTY currently offers two methods of listing execution times:
+
+- By file, ordered by descending average execution time.
+- By example, listing all the examples for a given file, ordered by descending average execution time. When listing by example, the 
+file path in question must also be supplied.
+
+The results can either be displayed by using the executable provided by the AWTY gem or by including the gem in code of your choice, 
+and making use of the `AreWeThereYet::Profiler#list_files` or `AreWeThereYet::Profiler#list_examples` methods.
+
+An example of using the executable:
+
+`bundle exec are_we_there_yet --database_uri sqlite:///path/to/results.sqlite3 --list examples --file_path /path/to/spec`
+
+`are_we_there_yet -h` will provide a list of available options.
+
+Currently, the only output supported is csv. The generator of this is very rudimentary. If there are sufficient use cases where 
+example descriptions contain characters that will break the output (e.g. examples that contain double quotes within their
+description) then it would make sense to use something like FasterCSV.
+
+An example of including AreWeThereYet::Profiler in other Ruby code:
+
+    require 'rubygems'
+    require 'are_we_there_yet'
+
+    # Instantiate the Profiler class with a string containing the path to the location of the database
+    profiler = AreWeThereYet::Profiler.new(@db_name)
+
+    examples_for_file = profiler.list_examples("/path/to/spec")
+
+Details of the output format as well as usage of `AreWeThereYet::Profiler#list_files` method can be found in
+`spec/lib/profiler_spec.rb`.
+    
 ## Data Structure
 
 The following data is stored in the database:

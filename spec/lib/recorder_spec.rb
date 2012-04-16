@@ -1,38 +1,40 @@
 require 'spec_helper'
 
-describe AreWeThereYet do
+describe AreWeThereYet::Recorder do
   before(:each) do
     @db_name = "/tmp/arewethereyet.sqlite"
+    @db = "sqlite://#{@db_name}"
+
     File.unlink(@db_name) if File.exists? @db_name
 
-    @connection = Sequel.connect("sqlite://#{@db_name}")
+    @connection = Sequel.connect(@db)
   end
 
   it "extends the RSpec formatter" do
-    AreWeThereYet.should < Spec::Runner::Formatter::BaseFormatter
+    AreWeThereYet::Recorder.should < Spec::Runner::Formatter::BaseFormatter
   end
 
   describe "#initialize" do
     it "creates the necessary tables in the database" do
-      AreWeThereYet.new({},@db_name)
+      AreWeThereYet::Recorder.new({},@db)
 
-      @connection.tables.sort.should == [:examples, :files, :metrics, :runs]
+      @connection.tables.sort.should == [:examples, :metrics, :runs, :spec_files]
     end
 
     it "creates the necessary indexes" do
-      AreWeThereYet.new({},@db_name)
+      AreWeThereYet::Recorder.new({},@db)
 
-      @connection.indexes(:files).should == { :files_path_index => {:unique=>false, :columns=>[:path]}}
+      @connection.indexes(:spec_files).should == { :spec_files_path_index => {:unique=>false, :columns=>[:path]}}
       @connection.indexes(:examples).should == {
-          :examples_file_id_description_index => {:unique=>false, :columns=>[:file_id, :description]}
+          :examples_spec_file_id_description_index => {:unique=>false, :columns=>[:spec_file_id, :description]}
       }
     end
 
     it "does not create the tables if they already exist" do
-      AreWeThereYet.new({},@db_name)
+      AreWeThereYet::Recorder.new({},@db)
       SQLite3::Database.any_instance.should_not_receive(:execute)
 
-      AreWeThereYet.new({}, @db_name)
+      AreWeThereYet::Recorder.new({}, @db)
     end
 
     it "rolls back table creation on error" do
@@ -46,7 +48,7 @@ describe AreWeThereYet do
       end
       Sequel.should_receive(:connect).and_return(broken_connection)
 
-      expect { AreWeThereYet.new({},@db_name) }.should raise_error
+      expect { AreWeThereYet::Recorder.new({},@db) }.should raise_error
 
       @connection.tables.should be_empty
     end
@@ -56,7 +58,7 @@ describe AreWeThereYet do
       mock_time.should_receive(:utc).and_return(mock_time)
       Time.stub(:now).and_return(mock_time)
 
-      AreWeThereYet.new({},@db_name)
+      AreWeThereYet::Recorder.new({},@db)
 
       @connection[:runs].first[:started_at].should_not be_nil
     end
@@ -73,14 +75,19 @@ describe AreWeThereYet do
       end
       Sequel.should_receive(:connect).and_return(broken_connection)
 
-      expect { AreWeThereYet.new({},@db_name) }.should_not raise_error
+      expect { AreWeThereYet::Recorder.new({},@db) }.should_not raise_error
+    end
+
+    it "raises an error if the URI provided is invalid" do
+      expect { AreWeThereYet::Recorder.new({}, '/this/is/obviously/bogus') }.
+        should raise_error(AreWeThereYet::InvalidDBLocation, /check that the location is valid/)
     end
   end
 
   describe "logging a metric for a new file" do
     before(:each) do
 
-      @awty = AreWeThereYet.new({}, @db_name)
+      @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec:42", :description => "blaah")
     end
 
@@ -88,7 +95,7 @@ describe AreWeThereYet do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      files = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM files")
+      files = SQLite3::Database.new(@db_name).execute("SELECT id, path FROM spec_files")
       files.size.should == 1
       files.first[1].should == @mock_example.location.split(':').first
     end
@@ -97,10 +104,10 @@ describe AreWeThereYet do
       @awty.example_started(@mock_example)
       @awty.example_passed(@mock_example)
 
-      file_id = @connection[:files].first[:id]
+      file_id = @connection[:spec_files].first[:id]
 
       @connection[:examples].count.should == 1
-      @connection[:examples].first[:file_id].should == file_id
+      @connection[:examples].first[:spec_file_id].should == file_id
       @connection[:examples].first[:description].should == @mock_example.description
     end
 
@@ -125,6 +132,21 @@ describe AreWeThereYet do
       metric[:run_id].should == run_id
     end
 
+    it "allows the observed execution time to be overridden" do
+      start_time = Time.now - 10
+      end_time = Time.now
+
+      Time.stub!(:now).and_return(start_time)
+      @awty.example_started(@mock_example)
+
+      Time.stub!(:now).and_return(end_time)
+      @awty.example_passed(@mock_example, :execution_time => 999.99)
+
+      @connection[:metrics].count.should ==1
+      metric = @connection[:metrics].first
+      metric[:execution_time].should == 999.99
+    end
+
     it "tracks metric creation using UTC time" do
       mock_time = Time.now
       utc_time = Time.now - 7200
@@ -139,7 +161,7 @@ describe AreWeThereYet do
 
     it "does not link the metric to a run if the run table does not exist" do
       # To maintain compatibility with version 0.1.0
-      AreWeThereYet.any_instance.should_receive(:tracking_runs?).and_return(false)
+      AreWeThereYet::Recorder.any_instance.should_receive(:tracking_runs?).and_return(false)
 
       @connection.create_table!(:metrics) do
         primary_key :id
@@ -155,7 +177,7 @@ describe AreWeThereYet do
 
   describe "logging a metric for an existing file" do
     before(:each) do
-      @awty = AreWeThereYet.new({}, @db_name)
+      @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
       @another_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "yippee!")
     end
@@ -168,13 +190,13 @@ describe AreWeThereYet do
       @awty.example_passed(@another_example)
 
       @connection[:examples].count.should == 2
-      @connection[:files].count.should == 1
+      @connection[:spec_files].count.should == 1
     end
   end
 
   describe "logging a metric for an existing example" do
     before(:each) do
-      @awty = AreWeThereYet.new({}, @db_name)
+      @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
     end
 
@@ -192,7 +214,7 @@ describe AreWeThereYet do
 
   describe "handling errors when logging" do
     before(:each) do
-      @awty = AreWeThereYet.new({}, @db_name)
+      @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
       @awty.example_started(@mock_example)
     end
@@ -202,14 +224,14 @@ describe AreWeThereYet do
 
       expect { @awty.example_passed(@mock_example) }.should raise_error
 
-      @connection[:files].count.should == 0
+      @connection[:spec_files].count.should == 0
       @connection[:examples].count.should == 0
     end
   end
 
   describe "closing" do
     before(:each) do
-      @awty = AreWeThereYet.new({}, @db_name)
+      @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec", :description => "blaah")
       @awty.example_started(@mock_example)
     end
@@ -236,7 +258,7 @@ describe AreWeThereYet do
 
     it "does not update the run if runs are not being tracked" do
       @connection.drop_table(:runs)
-      AreWeThereYet.any_instance.should_receive(:tracking_runs?).and_return(false)
+      AreWeThereYet::Recorder.any_instance.should_receive(:tracking_runs?).and_return(false)
 
       expect { @awty.close }.should_not raise_error
     end

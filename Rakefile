@@ -21,6 +21,7 @@ Jeweler::Tasks.new do |gem|
   gem.description = %Q{Provides detailed profiling data for RSpec runs in a SQLite3 DB}
   gem.email = "rorymckinley@gmail.com"
   gem.authors = ["Rory McKinley"]
+  gem.bindir = 'bin'
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new

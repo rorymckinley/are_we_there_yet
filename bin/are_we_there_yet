@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+
+require 'are_we_there_yet'
+require 'trollop'
+
+opts = Trollop::options do
+  opt :database_uri, "Database URI for the db that contains the execution times", :type => String
+  opt :list, "The type of list required - currently the options are 'files' or 'examples'", :type => String
+  opt :file_path, "The path for the spec file - used when listing examples for a given file", :type => String
+end
+
+AreWeThereYet::ProfilerUI.get_profiler_output(opts.delete(:database_location), STDOUT, :list => opts[:list],
+                                              :file_path => opts[:file_path]) 
