@@ -68,36 +68,6 @@ module AreWeThereYet
       @db2[:metrics].insert(metric_data)
     end
 
-    def create_tables
-      @db2.transaction do
-        if @db2.tables.empty?
-          @db2.create_table(:runs) do 
-            primary_key :id
-            DateTime :started_at
-            DateTime :ended_at
-          end
-          @db2.create_table(:spec_files) do
-            primary_key :id
-            String :path
-            index :path
-          end
-          @db2.create_table(:examples) do
-            primary_key :id
-            Integer :spec_file_id
-            column :description, :text
-            index [:spec_file_id, :description]
-          end
-          @db2.create_table(:metrics) do
-            primary_key :id
-            Integer :example_id
-            Float :execution_time
-            DateTime :created_at
-            Integer :run_id
-          end
-        end
-      end
-    end
-
     def tracking_runs?
       @db2.tables.include? :runs
     end
