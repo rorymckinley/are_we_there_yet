@@ -1,12 +1,7 @@
 module AreWeThereYet
   class Profiler
     def initialize(db_connection_string)
-      begin
-        @db = Sequel.connect(db_connection_string)
-      rescue ArgumentError
-        raise AreWeThereYet::InvalidDBLocation,
-          "Could not connect to the database specified by the URI - please check that the location is valid"
-      end
+      @db = AreWeThereYet::Persistence::Connection.create(db_connection_string)
     end
 
     def list_files

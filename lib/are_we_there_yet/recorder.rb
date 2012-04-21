@@ -1,12 +1,7 @@
 module AreWeThereYet
   class Recorder < Spec::Runner::Formatter::BaseFormatter
     def initialize(options,where)
-      begin
-        @db2 = Sequel.connect(where)
-      rescue ArgumentError
-        raise AreWeThereYet::InvalidDBLocation,
-          "Could not connect to the database specified by the URI - please check that the location is valid"
-      end
+      @db2 = AreWeThereYet::Persistence::Connection.create(where)
 
       AreWeThereYet::Persistence::Schema.create(@db2)
 
