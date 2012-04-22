@@ -3,7 +3,7 @@ module AreWeThereYet
     attr_reader :id, :spec_file_id, :description
 
     def initialize(options)
-      @db = yield
+      @db = yield if_block_provided?
 
       @id = options[:id]
       @spec_file_id = options[:spec_file_id]

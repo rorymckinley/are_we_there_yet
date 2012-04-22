@@ -13,13 +13,14 @@ module AreWeThereYet
     end
 
     def example_passed(example, options={})
-      @db2.transaction do
-        location_id = persist_file(example)
+      Metric.from_rspec_example(example, Time.now - @start).save
+      # @db2.transaction do
+      #   location_id = persist_file(example)
 
-        example_id = persist_example(example, location_id)
+      #   example_id = persist_example(example, location_id)
 
-        persist_metric(example_id, options)
-      end
+      #   persist_metric(example_id, options)
+      # end
     end
 
     def close
