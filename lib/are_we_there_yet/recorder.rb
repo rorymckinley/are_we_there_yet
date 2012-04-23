@@ -18,7 +18,7 @@ module AreWeThereYet
 
         example_id = persist_example(example, location_id)
 
-        persist_metric(example_id, options)
+        persist_metric(example_id, options.merge(:path => get_file_path_from(example), :description => example.description))
       end
     end
 
@@ -33,8 +33,12 @@ module AreWeThereYet
       @run_id = @db2[:runs].insert(:started_at => Time.now.utc) if tracking_runs?
     end
 
+    def get_file_path_from(example)
+      example.location.split(':').first
+    end
+
     def persist_file(example)
-      path = example.location.split(':').first
+      path =  get_file_path_from example
 
       file = @db2[:spec_files].where(:path => path).first
       if file
@@ -56,8 +60,17 @@ module AreWeThereYet
 
     def persist_metric(example_id, options)
       execution_time = options[:execution_time] || Time.now - @start
+      path = options[:path]
+      description = options[:description]
 
-      metric_data = { :example_id => example_id, :created_at => Time.now.utc, :execution_time => execution_time }
+      metric_data = {
+        :example_id => example_id,
+        :created_at => Time.now.utc,
+        :execution_time => execution_time,
+        :path => path,
+        :description => description
+      }
+
       metric_data.merge!( :run_id => @run_id ) if tracking_runs?
 
       @db2[:metrics].insert(metric_data)

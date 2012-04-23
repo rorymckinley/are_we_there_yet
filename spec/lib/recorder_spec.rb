@@ -127,6 +127,15 @@ describe AreWeThereYet::Recorder do
       metric[:run_id].should == run_id
     end
 
+    it "denormalises file path and example descriptions onto the metric" do
+      @awty.example_started(@mock_example)
+      @awty.example_passed(@mock_example)
+
+      metric = @connection[:metrics].first
+      metric[:path].should == @mock_example.location.split(':').first
+      metric[:description].should == @mock_example.description
+    end
+
     it "allows the observed execution time to be overridden" do
       start_time = Time.now - 10
       end_time = Time.now
@@ -163,6 +172,8 @@ describe AreWeThereYet::Recorder do
         Integer :example_id
         Float :execution_time
         DateTime :created_at
+        String :path
+        String :description
       end
 
       @awty.example_started(@mock_example)
