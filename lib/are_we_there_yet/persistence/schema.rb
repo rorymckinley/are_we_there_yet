@@ -21,9 +21,13 @@ module AreWeThereYet
         :metrics => Proc.new {
           primary_key :id
           Integer :example_id
+          String :path
+          column :description, :text
           Float :execution_time
           DateTime :created_at
           Integer :run_id
+          index :path
+          index :description
         }
       }
       def self.create(connection)

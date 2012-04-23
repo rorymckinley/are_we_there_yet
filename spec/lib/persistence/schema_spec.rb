@@ -80,9 +80,16 @@ describe AreWeThereYet::Persistence::Schema do
     schema = @connection.schema(:metrics)
     schema.should have_field :field => :id, :attributes => {:type => :integer, :primary_key => true}
     schema.should have_field :field => :example_id, :attributes => {:type => :integer}
+    schema.should have_field :field => :path, :attributes => {:type => :string}
+    schema.should have_field :field => :description, :attributes => {:type => :string}
     schema.should have_field :field => :execution_time, :attributes => {:type => :float}
     schema.should have_field :field => :created_at, :attributes => {:type => :datetime}
     schema.should have_field :field => :run_id, :attributes => {:type => :integer}
+
+    @connection.indexes(:metrics).should == {
+      :metrics_path_index => {:unique=>false, :columns=>[:path]},
+      :metrics_description_index => { :unique => false, :columns => [:description]}
+    }
   end
 
   it "rolls back table creation if there is a problem creating any one of the tables" do
