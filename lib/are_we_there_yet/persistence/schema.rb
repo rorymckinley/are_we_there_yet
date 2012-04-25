@@ -2,25 +2,13 @@ module AreWeThereYet
   module Persistence
     module Schema
       @@tables = {
-        :spec_files => Proc.new {
-          primary_key :id
-          String :path
-          index :path
-        },
         :runs => Proc.new {
           primary_key :id
           DateTime :started_at
           DateTime :ended_at
         },
-        :examples => Proc.new {
-          primary_key :id
-          Integer :spec_file_id
-          column :description, :text
-          index [:spec_file_id, :description]
-        },
         :metrics => Proc.new {
           primary_key :id
-          Integer :example_id
           String :path
           column :description, :text
           Float :execution_time

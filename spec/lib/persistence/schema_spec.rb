@@ -41,17 +41,6 @@ describe AreWeThereYet::Persistence::Schema do
     @connection = Sequel.connect(@db)
   end
 
-  it "creates a table for storing spec files" do
-    AreWeThereYet::Persistence::Schema.create(@connection)
-
-    schema = @connection.schema(:spec_files)
-
-    schema.should have_field :field => :id, :attributes => {:type => :integer, :primary_key => true}
-    schema.should have_field :field => :path, :attributes => {:type => :string}
-
-    @connection.indexes(:spec_files).should == { :spec_files_path_index => {:unique=>false, :columns=>[:path]}}
-  end
-
   it "creates a table for tracking spec runs" do
     AreWeThereYet::Persistence::Schema.create(@connection)
 
@@ -61,25 +50,11 @@ describe AreWeThereYet::Persistence::Schema do
     schema.should have_field :field => :ended_at, :attributes => {:type => :datetime}
   end
 
-  it "creates a table for tracking examples" do
-    AreWeThereYet::Persistence::Schema.create(@connection)
-
-    schema = @connection.schema(:examples)
-    schema.should have_field :field => :id, :attributes => {:type => :integer, :primary_key => true}
-    schema.should have_field :field => :spec_file_id, :attributes => {:type => :integer}
-    schema.should have_field :field => :description, :attributes => {:type => :string}
-
-    @connection.indexes(:examples).should == {
-      :examples_spec_file_id_description_index => {:unique=>false, :columns=>[:spec_file_id, :description]}
-    }
-  end
-
   it "creates a table for tracking metrics" do
     AreWeThereYet::Persistence::Schema.create(@connection)
 
     schema = @connection.schema(:metrics)
     schema.should have_field :field => :id, :attributes => {:type => :integer, :primary_key => true}
-    schema.should have_field :field => :example_id, :attributes => {:type => :integer}
     schema.should have_field :field => :path, :attributes => {:type => :string}
     schema.should have_field :field => :description, :attributes => {:type => :string}
     schema.should have_field :field => :execution_time, :attributes => {:type => :float}

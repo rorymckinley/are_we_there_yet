@@ -13,13 +13,7 @@ module AreWeThereYet
     end
 
     def example_passed(example, options={})
-      @db2.transaction do
-        location_id = persist_file(example)
-
-        example_id = persist_example(example, location_id)
-
-        persist_metric(example_id, options.merge(:path => get_file_path_from(example), :description => example.description))
-      end
+      persist_metric(options.merge(:path => get_file_path_from(example), :description => example.description))
     end
 
     def close
@@ -37,34 +31,12 @@ module AreWeThereYet
       example.location.split(':').first
     end
 
-    def persist_file(example)
-      path =  get_file_path_from example
-
-      file = @db2[:spec_files].where(:path => path).first
-      if file
-        file[:id]
-      else
-        @db2[:spec_files].insert(:path => path)
-      end
-    end
-
-    def persist_example(example, spec_file_id)
-      persisted_example = @db2[:examples].where[:spec_file_id => spec_file_id, :description => example.description]
-
-      if persisted_example
-        persisted_example[:id]
-      else
-        @db2[:examples].insert(:spec_file_id => spec_file_id, :description => example.description)
-      end
-    end
-
-    def persist_metric(example_id, options)
+    def persist_metric(options)
       execution_time = options[:execution_time] || Time.now - @start
       path = options[:path]
       description = options[:description]
 
       metric_data = {
-        :example_id => example_id,
         :created_at => Time.now.utc,
         :execution_time => execution_time,
         :path => path,
