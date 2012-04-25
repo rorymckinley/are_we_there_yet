@@ -21,38 +21,6 @@ describe AreWeThereYet::Recorder do
       @connection.tables.sort.should == [:examples, :metrics, :runs, :spec_files]
     end
 
-    it "creates the necessary indexes" do
-      AreWeThereYet::Recorder.new({},@db)
-
-      @connection.indexes(:spec_files).should == { :spec_files_path_index => {:unique=>false, :columns=>[:path]}}
-      @connection.indexes(:examples).should == {
-          :examples_spec_file_id_description_index => {:unique=>false, :columns=>[:spec_file_id, :description]}
-      }
-    end
-
-    it "does not create the tables if they already exist" do
-      AreWeThereYet::Recorder.new({},@db)
-      SQLite3::Database.any_instance.should_not_receive(:execute)
-
-      AreWeThereYet::Recorder.new({}, @db)
-    end
-
-    it "rolls back table creation on error" do
-      broken_connection = mock(Sequel::SQLite::Database, :tables => [])
-      broken_connection.stub(:create_table) do |arg, bl|
-        if arg == :metrics
-          raise RuntimeError
-        else
-          @connection.create_table(arg, &bl)
-        end
-      end
-      Sequel.should_receive(:connect).and_return(broken_connection)
-
-      expect { AreWeThereYet::Recorder.new({},@db) }.should raise_error
-
-      @connection.tables.should be_empty
-    end
-
     it "logs the start of a spec run" do
       mock_time = Time.now
       mock_time.should_receive(:utc).and_return(mock_time)
