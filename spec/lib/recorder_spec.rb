@@ -59,18 +59,6 @@ describe AreWeThereYet::Recorder do
       metric[:path].should == @mock_example.location.split(':').first
       metric[:description].should == @mock_example.description
     end
-
-    it "tracks metric creation using UTC time" do
-      mock_time = Time.now
-      utc_time = Time.now - 7200
-      mock_time.should_receive(:utc).and_return(utc_time)
-      Time.stub(:now).and_return(mock_time)
-
-      @awty.example_started(@mock_example)
-      @awty.example_passed(@mock_example)
-
-      @connection[:metrics].first[:created_at].should == utc_time
-    end
   end
 
   describe "closing" do

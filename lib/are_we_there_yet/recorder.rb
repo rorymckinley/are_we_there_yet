@@ -32,16 +32,15 @@ module AreWeThereYet
     end
 
     def persist_metric(example)
-      metric_data = {
-        :created_at => Time.now.utc,
+
+      metric = AreWeThereYet::Metric.new(
         :execution_time => Time.now - @start,
         :path => get_file_path_from(example),
-        :description => example.description
-      }
+        :description => example.description,
+        :run_id => @run_id
+      )
 
-      metric_data.merge!( :run_id => @run_id )
-
-      @db2[:metrics].insert(metric_data)
+      metric.save(@db2)
     end
   end
 end
