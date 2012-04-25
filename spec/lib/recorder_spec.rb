@@ -30,21 +30,6 @@ describe AreWeThereYet::Recorder do
 
       @connection[:runs].first[:started_at].should_not be_nil
     end
-
-    it "does not log the start of a spec run if there is no table in the database" do
-      # This to maintain backwards-compatibility with DBs created by v0.1.0
-      broken_connection = mock(Sequel::SQLite::Database, :tables => @connection.tables, :transaction => nil)
-      broken_connection.stub(:create_table) do |arg, bl|
-        if arg == :metrics
-          # Do nothing - runs table is not created
-        else
-          @connection.create_table(arg, &bl)
-        end
-      end
-      Sequel.should_receive(:connect).and_return(broken_connection)
-
-      expect { AreWeThereYet::Recorder.new({},@db) }.should_not raise_error
-    end
   end
 
   describe "logging a metric for a new file" do
@@ -101,23 +86,6 @@ describe AreWeThereYet::Recorder do
 
       @connection[:metrics].first[:created_at].should == utc_time
     end
-
-    it "does not link the metric to a run if the run table does not exist" do
-      # To maintain compatibility with version 0.1.0
-      AreWeThereYet::Recorder.any_instance.should_receive(:tracking_runs?).and_return(false)
-
-      @connection.create_table!(:metrics) do
-        primary_key :id
-        Integer :example_id
-        Float :execution_time
-        DateTime :created_at
-        String :path
-        String :description
-      end
-
-      @awty.example_started(@mock_example)
-      expect { @awty.example_passed(@mock_example) }.should_not raise_error
-    end
   end
 
   describe "closing" do
@@ -145,13 +113,6 @@ describe AreWeThereYet::Recorder do
       Time.stub(:now).and_return(time)
 
       @awty.close
-    end
-
-    it "does not update the run if runs are not being tracked" do
-      @connection.drop_table(:runs)
-      AreWeThereYet::Recorder.any_instance.should_receive(:tracking_runs?).and_return(false)
-
-      expect { @awty.close }.should_not raise_error
     end
   end
 end

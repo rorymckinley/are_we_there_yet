@@ -17,14 +17,14 @@ module AreWeThereYet
     end
 
     def close
-      @db2[:runs].where(:id => @run_id).update(:ended_at => Time.now.utc) if tracking_runs?
+      @db2[:runs].where(:id => @run_id).update(:ended_at => Time.now.utc)
       @db2.disconnect
     end
 
     private
 
     def log_run
-      @run_id = @db2[:runs].insert(:started_at => Time.now.utc) if tracking_runs?
+      @run_id = @db2[:runs].insert(:started_at => Time.now.utc)
     end
 
     def get_file_path_from(example)
@@ -43,13 +43,9 @@ module AreWeThereYet
         :description => description
       }
 
-      metric_data.merge!( :run_id => @run_id ) if tracking_runs?
+      metric_data.merge!( :run_id => @run_id )
 
       @db2[:metrics].insert(metric_data)
-    end
-
-    def tracking_runs?
-      @db2.tables.include? :runs
     end
   end
 end
