@@ -15,12 +15,12 @@ describe AreWeThereYet::Metric do
   end
 
   it "is instantiated from a hash of options" do
-    m = AreWeThereYet::Metric.new(:id => 1, :execution_time => 30.0, :path => '/path/to/file', :run_id => 99, :description => 'blah')
-    m.id.should == 1
-    m.execution_time.should == 30.0
-    m.path.should == '/path/to/file'
-    m.run_id.should == 99
-    m.description.should == 'blah'
+    m = AreWeThereYet::Metric.new(@properties)
+    m.id.should == @properties[:id]
+    m.execution_time.should == @properties[:execution_time]
+    m.path.should == @properties[:path]
+    m.run_id.should == @properties[:run_id]
+    m.description.should == @properties[:description]
   end
 
   it "returns all metrics currently in the provided database" do

@@ -15,7 +15,7 @@ describe AreWeThereYet::Run do
 
       AreWeThereYet::Run.new.start(@connection)
 
-      @connection[:runs].should have(1).records
+      @connection[:runs].all.should have(1).records
     end
 
     it "sets the start time as an UTC timestamp" do
@@ -24,13 +24,13 @@ describe AreWeThereYet::Run do
 
       AreWeThereYet::Run.new.start(@connection)
 
-      @connection[:runs].all.first[:started_at].should == fake_time
+      @connection[:runs].first[:started_at].should == fake_time
     end
 
     it "records the id of the run created" do
       run = AreWeThereYet::Run.new
       run.start(@connection)
-      run.id.should == @connection[:runs].all.first[:id]
+      run.id.should == @connection[:runs].first[:id]
     end
   end
 
