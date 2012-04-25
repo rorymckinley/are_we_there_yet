@@ -18,27 +18,24 @@ describe AreWeThereYet::Recorder do
     it "creates the necessary tables in the database" do
       AreWeThereYet::Recorder.new({},@db)
 
-      @connection.tables.sort.should == [:metrics, :runs]
+      @connection.tables.should_not be_empty
     end
 
     it "logs the start of a spec run" do
-      mock_time = Time.now
-      mock_time.should_receive(:utc).and_return(mock_time)
-      Time.stub(:now).and_return(mock_time)
-
       AreWeThereYet::Recorder.new({},@db)
 
       @connection[:runs].first[:started_at].should_not be_nil
     end
   end
 
-  describe "logging a metric for a new file" do
+  describe "logging a metric" do
     before(:each) do
-
       @awty = AreWeThereYet::Recorder.new({}, @db)
       @mock_example = mock(Spec::Example::ExampleProxy, :location => "/path/to/spec:42", :description => "blaah")
     end
 
+    # This test duplicates a test done for the Metric class - still undecided whether the cost of duplication
+    # outweighs the benefit of confirming integration
     it "creates an entry for the metric in the database" do
       start_time = Time.now - 10
       end_time = Time.now
@@ -54,7 +51,6 @@ describe AreWeThereYet::Recorder do
       @connection[:metrics].count.should ==1
       metric = @connection[:metrics].first
       metric[:execution_time].should == end_time - start_time
-      metric[:created_at].should_not be_nil
       metric[:run_id].should == run_id
       metric[:path].should == @mock_example.location.split(':').first
       metric[:description].should == @mock_example.description
@@ -76,16 +72,7 @@ describe AreWeThereYet::Recorder do
     it "updates the end time value for the relevant run" do
       @awty.close
 
-      run = @connection[:runs].first
-      run[:ended_at].should_not be_nil
-    end
-
-    it "stores the UTC time value for the relevant run" do
-      time = Time.now
-      time.should_receive(:utc).and_return(time - 7200)
-      Time.stub(:now).and_return(time)
-
-      @awty.close
+      run = @connection[:runs].first[:ended_at].should_not be_nil
     end
   end
 end
