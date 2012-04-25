@@ -21,25 +21,32 @@ module AreWeThereYet
     private
 
     def average_file_execution_times
-      all_examples = Example.all { @db }
-      example_averages = all_examples.map { |ex| { :file => ex.spec_file.to_s, :average_execution_time => ex.average_time } }
+      metrics = Metric.all(@db)
 
-      av_by_file = example_averages.inject({}) do |output, average_hash|
-        output[average_hash[:file]] ||= 0.0
-        output[average_hash[:file]] += average_hash[:average_execution_time]
-        output
+      metrics_by_file = metrics.group_by { |m| m.path }
+
+      metrics_by_file_per_run = metrics_by_file.merge(metrics_by_file) do |file, metrics, metrics|
+        metrics.group_by { |m| m.run_id }
       end
 
-      file_averages_for_sorting = av_by_file.inject([]) do |output,file_time|
-        output << { :file => file_time.first, :average_execution_time => file_time.last }
-        output
-      end
+      # The next line is really just a map operation
+      averages_by_file = metrics_by_file_per_run.merge(metrics_by_file_per_run) { |key, runs, runs| find_average_time_for runs }
 
-      file_averages_for_sorting
+      averages_by_file.inject([]) do |output, (file_path, average_execution_time)|
+        output << { :file => file_path, :average_execution_time => average_execution_time }
+      end
     end
 
     def sorted_output(data_to_sort)
       data_to_sort.sort { |x,y| y[:average_execution_time] <=> x[:average_execution_time] }
+    end
+
+    def find_average_time_for(runs)
+      total_per_run = runs.inject([]) do |memo, (run,metrics)|
+        memo << metrics.inject(0.0) { |total,m| total + m.execution_time }
+      end
+
+      (total_per_run.inject(:+))/total_per_run.size
     end
   end
 end
