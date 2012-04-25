@@ -15,8 +15,7 @@ describe AreWeThereYet::Metric do
     @db = AreWeThereYet::Persistence::Connection.create("sqlite://#{@db_name}")
     AreWeThereYet::Persistence::Schema.create(@db)
 
-    @db[:metrics].insert(:path => 'abc')
-    @db[:metrics].insert(:path => 'def')
+    @db[:metrics].insert_multiple([{:path => 'abc'}, {:path => 'def'}])
 
     all_metrics = AreWeThereYet::Metric.all(@db)
     all_metrics.first.path.should == 'abc'
