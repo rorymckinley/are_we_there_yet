@@ -12,8 +12,8 @@ module AreWeThereYet
       @start = Time.now
     end
 
-    def example_passed(example, options={})
-      persist_metric(options.merge(:path => get_file_path_from(example), :description => example.description))
+    def example_passed(example)
+      persist_metric(example)
     end
 
     def close
@@ -31,16 +31,12 @@ module AreWeThereYet
       example.location.split(':').first
     end
 
-    def persist_metric(options)
-      execution_time = options[:execution_time] || Time.now - @start
-      path = options[:path]
-      description = options[:description]
-
+    def persist_metric(example)
       metric_data = {
         :created_at => Time.now.utc,
-        :execution_time => execution_time,
-        :path => path,
-        :description => description
+        :execution_time => Time.now - @start,
+        :path => get_file_path_from(example),
+        :description => example.description
       }
 
       metric_data.merge!( :run_id => @run_id )

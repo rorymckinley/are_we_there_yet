@@ -60,21 +60,6 @@ describe AreWeThereYet::Recorder do
       metric[:description].should == @mock_example.description
     end
 
-    it "allows the observed execution time to be overridden" do
-      start_time = Time.now - 10
-      end_time = Time.now
-
-      Time.stub!(:now).and_return(start_time)
-      @awty.example_started(@mock_example)
-
-      Time.stub!(:now).and_return(end_time)
-      @awty.example_passed(@mock_example, :execution_time => 999.99)
-
-      @connection[:metrics].count.should ==1
-      metric = @connection[:metrics].first
-      metric[:execution_time].should == 999.99
-    end
-
     it "tracks metric creation using UTC time" do
       mock_time = Time.now
       utc_time = Time.now - 7200
