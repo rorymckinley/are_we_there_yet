@@ -1,9 +1,9 @@
 module AreWeThereYet
   class Recorder < Spec::Runner::Formatter::BaseFormatter
     def initialize(options,where)
-      @db2 = AreWeThereYet::Persistence::Connection.create(where)
+      @db = AreWeThereYet::Persistence::Connection.create(where)
 
-      AreWeThereYet::Persistence::Schema.create(@db2)
+      AreWeThereYet::Persistence::Schema.create(@db)
 
       log_run
     end
@@ -17,15 +17,15 @@ module AreWeThereYet
     end
 
     def close
-      @run.finish(@db2)
-      @db2.disconnect
+      @run.finish(@db)
+      @db.disconnect
     end
 
     private
 
     def log_run
       @run = AreWeThereYet::Run.new
-      @run.start(@db2)
+      @run.start(@db)
     end
 
     def get_file_path_from(example)
@@ -41,7 +41,7 @@ module AreWeThereYet
         :run_id => @run.id
       )
 
-      metric.save(@db2)
+      metric.save(@db)
     end
   end
 end
