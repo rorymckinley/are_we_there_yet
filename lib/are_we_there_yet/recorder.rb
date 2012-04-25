@@ -17,14 +17,15 @@ module AreWeThereYet
     end
 
     def close
-      @db2[:runs].where(:id => @run_id).update(:ended_at => Time.now.utc)
+      @run.finish(@db2)
       @db2.disconnect
     end
 
     private
 
     def log_run
-      @run_id = @db2[:runs].insert(:started_at => Time.now.utc)
+      @run = AreWeThereYet::Run.new
+      @run.start(@db2)
     end
 
     def get_file_path_from(example)
@@ -37,7 +38,7 @@ module AreWeThereYet
         :execution_time => Time.now - @start,
         :path => get_file_path_from(example),
         :description => example.description,
-        :run_id => @run_id
+        :run_id => @run.id
       )
 
       metric.save(@db2)
