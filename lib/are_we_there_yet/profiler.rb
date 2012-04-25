@@ -9,13 +9,30 @@ module AreWeThereYet
     end
 
     def list_examples(file_path)
-      if ( file = SpecFile.for_path(file_path) { @db } )
-        example_averages_for_sorting = file.examples.map { |ex| { :example => ex.to_s, :average_execution_time => ex.average_time } }
-      else
-        example_averages_for_sorting = []
-      end
+      metrics = Metric.all(@db)
 
-      sorted_output(example_averages_for_sorting)
+      metrics_by_file = metrics.group_by { |m| m.path }
+
+      if metrics_by_file[file_path]
+
+        metrics_by_example = metrics_by_file[file_path].group_by { |m| m.description }
+
+        metrics_by_example_per_run = metrics_by_example.merge(metrics_by_example) do |example,metrics,metrics|
+          metrics.group_by { |m| m.run_id }
+        end
+
+        averages_by_example = metrics_by_example_per_run.merge(metrics_by_example_per_run) do |key, runs, runs|
+          find_average_time_for runs
+        end
+
+        example_averages_for_sorting = averages_by_example.inject([]) do |output, (example, average_execution_time)|
+          output << { :example => example, :average_execution_time => average_execution_time }
+        end
+
+        sorted_output(example_averages_for_sorting)
+      else
+        []
+      end
     end
 
     private

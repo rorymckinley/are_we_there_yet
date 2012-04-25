@@ -2,11 +2,12 @@ require 'spec_helper'
 
 describe AreWeThereYet::Metric do
   it "is instantiated from a hash of options" do
-    m = AreWeThereYet::Metric.new(:id => 1, :execution_time => 30.0, :path => '/path/to/file', :run_id => 99)
+    m = AreWeThereYet::Metric.new(:id => 1, :execution_time => 30.0, :path => '/path/to/file', :run_id => 99, :description => 'blah')
     m.id.should == 1
     m.execution_time.should == 30.0
     m.path.should == '/path/to/file'
     m.run_id.should == 99
+    m.description.should == 'blah'
   end
 
   it "can return all metrics currently in the provided data store" do
