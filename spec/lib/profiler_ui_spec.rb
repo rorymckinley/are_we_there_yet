@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe AreWeThereYet::ProfilerUI do
-  before(:each) do
+  before(:all) do
     @db_name = "/tmp/are_we_there_yet_#{Time.now.to_i}_#{rand(100000000)}_spec.sqlite"
     @db = "sqlite://#{@db_name}"
     @connection = AreWeThereYet::Persistence::Connection.create(@db)
@@ -12,11 +12,13 @@ describe AreWeThereYet::ProfilerUI do
     @description = "blaah"
 
     @connection[:metrics].insert(:path => @path, :description => @description, :execution_time => @time, :run_id => 1)
+  end
 
+  before(:each) do
     @mock_io = double(IO)
   end
 
-  after(:each) do
+  after(:all) do
     @connection.disconnect
     File.unlink(@db_name) if File.exists? @db_name
   end
