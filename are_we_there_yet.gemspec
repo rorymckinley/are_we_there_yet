@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rory McKinley"]
-  s.date = "2012-04-10"
+  s.date = "2012-05-02"
   s.description = "Provides detailed profiling data for RSpec runs in a SQLite3 DB"
   s.email = "rorymckinley@gmail.com"
   s.executables = ["are_we_there_yet"]
@@ -29,22 +29,24 @@ Gem::Specification.new do |s|
     "are_we_there_yet.gemspec",
     "bin/are_we_there_yet",
     "lib/are_we_there_yet.rb",
-    "lib/are_we_there_yet/example.rb",
+    "lib/are_we_there_yet/exceptions.rb",
     "lib/are_we_there_yet/formatter.rb",
     "lib/are_we_there_yet/metric.rb",
+    "lib/are_we_there_yet/persistence/connection.rb",
+    "lib/are_we_there_yet/persistence/schema.rb",
     "lib/are_we_there_yet/profiler.rb",
     "lib/are_we_there_yet/profiler_ui.rb",
     "lib/are_we_there_yet/recorder.rb",
-    "lib/are_we_there_yet/spec_file.rb",
-    "spec/are_we_there_yet_spec.rb",
-    "spec/lib/example_spec.rb",
+    "lib/are_we_there_yet/run.rb",
     "spec/lib/formatter_spec.rb",
     "spec/lib/metric_spec.rb",
+    "spec/lib/persistence/connection_spec.rb",
+    "spec/lib/persistence/schema_spec.rb",
     "spec/lib/profiler_spec.rb",
     "spec/lib/profiler_ui_spec.rb",
-    "spec/lib/spec_file_spec.rb",
+    "spec/lib/recorder_spec.rb",
+    "spec/lib/run_spec.rb",
     "spec/spec_helper.rb",
-    "spec/support/metric_factory.rb",
     "spec/support/spec_classes.rb",
     "spec/support/symbol.rb"
   ]
