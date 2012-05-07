@@ -9,6 +9,8 @@ database is passed through as a parameter when running the specs
 AreWeThereYet does not produce any output to STDOUT during the spec run. Howeevr, it does provide some rudimentary reporting that can
 be run against the data in the selected database.
 
+V1.0 provides no backwards compatibility for data recorded by earlier versions.
+
 ## Usage
 
 ### Logging of spec execution time
@@ -53,16 +55,16 @@ An example of including AreWeThereYet::Profiler in other Ruby code:
 Details of the output format as well as usage of `AreWeThereYet::Profiler#list_files` method can be found in
 `spec/lib/profiler_spec.rb`.
     
-## Data Structure
+## Database
 
-The following data is stored in the database:
+AWTY should support any database that Sequel (the current underlying ORM library) supports - simply specify the URI accordingly.
 
-- runs (from v0.2.0 onwards) - this is to allow conclusive tracking of metrics against a specific run. Multiple runs close to one 
-may result in guesswork when determining which metrics belong to which run. v0.1.0 does not track this data, but v0.2.0 is backwards 
-compatible and can handle the reduced fidelity when dealing with a database created by v0.1.0.
-- files - this represents the individual files containing the examples that are being run.
-- examples - the individual examples themselves (one file has many examples)
-- metrics - the run time per example (per run from v0.2.0 onwards) - one example has many metrics, one run has many metrics
+## Acknowledgements
+
+My employer, Hetzner (Pty) Ltd, generously allows me to work on Open Source projects during work hours - which accounted for most 
+of the tim espent on this gem.
+
+Thanks also to Sheldon Hearn for guidance/code review.
 
 ## License
 
