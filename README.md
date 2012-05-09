@@ -62,7 +62,7 @@ AWTY should support any database that Sequel (the current underlying ORM library
 ## Acknowledgements
 
 My employer, Hetzner (Pty) Ltd, generously allows me to work on Open Source projects during work hours - which accounted for most 
-of the tim espent on this gem.
+of the time spent on this gem.
 
 Thanks also to Sheldon Hearn for guidance/code review.
 
