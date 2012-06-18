@@ -42,11 +42,11 @@ module AreWeThereYet
 
     def get_average_per_key(metric_set)
       # Merging a hash with itself is really just a sneaky way to do a map
-      metrics_by_key_per_run = metric_set.merge(metric_set) do |key,metrics,metrics|
+      metrics_by_key_per_run = metric_set.merge(metric_set) do |key, metrics, ignore_this|
         metrics.group_by { |m| m.run_id }
       end
 
-      averages_by_key = metrics_by_key_per_run.merge(metrics_by_key_per_run) do |key, runs, runs|
+      averages_by_key = metrics_by_key_per_run.merge(metrics_by_key_per_run) do |key, runs, ignore_this|
         find_average_time_for runs
       end
     end
